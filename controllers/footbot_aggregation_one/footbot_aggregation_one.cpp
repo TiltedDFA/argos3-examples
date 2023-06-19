@@ -1,5 +1,5 @@
 /* Include the controller definition */
-#include "footbot_basictest.h"
+#include "footbot_aggregation_one.h"
 /* Function definitions for XML parsing */
 #include <argos3/core/utility/configuration/argos_configuration.h>
 /* 2D vector definition */
@@ -8,19 +8,19 @@
 /****************************************/
 /****************************************/
 
-CFootBotBasicTest::CFootBotBasicTest() :
+CFootBotAggregationOne::CFootBotAggregationOne():
    m_pcWheels(NULL),
    m_pcProximity(NULL),
    m_cAlpha(10.0f),
    m_fDelta(0.5f),
    m_fWheelVelocity(2.5f),
-   m_cGoStraightAngleRange(-ToRadians(m_cAlpha),
-                           ToRadians(m_cAlpha)) {}
+   m_cGoStraightAngleRange(-argos::ToRadians(m_cAlpha),
+                           argos::ToRadians(m_cAlpha)) {}
 
 /****************************************/
 /****************************************/
 
-void CFootBotBasicTest::Init(TConfigurationNode& t_node) {
+void CFootBotAggregationOne::Init(argos::TConfigurationNode& t_node) {
    /*
     * Get sensor/actuator handles
     *
@@ -43,8 +43,8 @@ void CFootBotBasicTest::Init(TConfigurationNode& t_node) {
     * list a device in the XML and then you request it here, an error
     * occurs.
     */
-   m_pcWheels    = GetActuator<CCI_DifferentialSteeringActuator>("differential_steering");
-   m_pcProximity = GetSensor  <CCI_FootBotProximitySensor      >("footbot_proximity"    );
+   m_pcWheels    = GetActuator<argos::CCI_DifferentialSteeringActuator>("differential_steering");
+   m_pcProximity = GetSensor  <argos::CCI_FootBotProximitySensor      >("footbot_proximity"    );
    /*
     * Parse the configuration file
     *
@@ -52,22 +52,22 @@ void CFootBotBasicTest::Init(TConfigurationNode& t_node) {
     * parameters and it's nice to put them in the config file so we don't
     * have to recompile if we want to try other settings.
     */
-   GetNodeAttributeOrDefault(t_node, "alpha", m_cAlpha, m_cAlpha);
+   argos::GetNodeAttributeOrDefault(t_node, "alpha", m_cAlpha, m_cAlpha);
    m_cGoStraightAngleRange.Set(-ToRadians(m_cAlpha), ToRadians(m_cAlpha));
-   GetNodeAttributeOrDefault(t_node, "delta", m_fDelta, m_fDelta);
-   GetNodeAttributeOrDefault(t_node, "velocity", m_fWheelVelocity, m_fWheelVelocity);
+   argos::GetNodeAttributeOrDefault(t_node, "delta", m_fDelta, m_fDelta);
+   argos::GetNodeAttributeOrDefault(t_node, "velocity", m_fWheelVelocity, m_fWheelVelocity);
 }
 
 /****************************************/
 /****************************************/
 
-void CFootBotBasicTest::ControlStep() {
-   const CCI_FootBotProximitySensor::TReadings& tProxReads = m_pcProximity->GetReadings();
+void CFootBotAggregationOne::ControlStep() {
+   const argos::CCI_FootBotProximitySensor::TReadings& tProxReads = m_pcProximity->GetReadings();
    /* Sum them together */
-   CVector2 cAccumulator;
+   argos::CVector2 cAccumulator;
    for(size_t i = 0; i < tProxReads.size(); ++i) {
       if(i < 3) std::cout << "S" << (i+1) << " = V:" << tProxReads[i].Value << ", A:" << tProxReads[i].Angle.GetValue() << std::endl;
-      cAccumulator += CVector2(tProxReads[i].Value, tProxReads[i].Angle);
+      cAccumulator += argos::CVector2(tProxReads[i].Value, tProxReads[i].Angle);
    }
    //finds average reading - divides both the angles and the value stored
    cAccumulator /= tProxReads.size();
@@ -75,7 +75,7 @@ void CFootBotBasicTest::ControlStep() {
     * is far enough, continue going straight, otherwise curve a little
     */
    std::cout << "Average Value is " << cAccumulator.Length() << std::endl;
-   CRadians cAngle = cAccumulator.Angle();
+   argos::CRadians cAngle = cAccumulator.Angle();
    m_pcWheels->SetLinearVelocity(m_fWheelVelocity,m_fWheelVelocity);
 }
 
@@ -91,4 +91,4 @@ void CFootBotBasicTest::ControlStep() {
  * controller class to instantiate.
  * See also the configuration files for an example of how this is used.
  */
-REGISTER_CONTROLLER(CFootBotBasicTest, "footbot_basictest_controller")
+REGISTER_CONTROLLER(CFootBotAggregationOne, "footbot_aggregation_one")

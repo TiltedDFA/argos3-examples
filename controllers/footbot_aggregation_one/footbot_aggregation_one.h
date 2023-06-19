@@ -1,23 +1,13 @@
 /*
- * AUTHOR: Carlo Pinciroli <cpinciro@ulb.ac.be>
+ * AUTHOR: Malik Tremain <cpinciro@ulb.ac.be>
  *
- * An example diffusion controller for the foot-bot.
- *
- * This controller makes the robots behave as gas particles. The robots
- * go straight until they get close enough to another robot, in which
- * case they turn, loosely simulating an elastic collision. The net effect
- * is that over time the robots diffuse in the environment.
- *
- * The controller uses the proximity sensor to detect obstacles and the
- * wheels to move the robot around.
- *
- * This controller is meant to be used with the XML files:
- *    experiments/diffusion_1.argos
- *    experiments/diffusion_10.argos
+ * This will be an implamentation of the hop count aggregation alg as
+ * described in Schmickl T, Möslinger C, Crailsheim K 2007 Collective perception in a robot swarm. Swarm
+ * Robotics, (Springer, Berlin) pp.144–157
  */
 
-#ifndef FOOTBOT_DIFFUSION_H
-#define FOOTBOT_DIFFUSION_H
+#ifndef FOOTBOT_AGGREGATION_ONE_H
+#define FOOTBOT_AGGREGATION_ONE_H
 
 /*
  * Include some necessary headers.
@@ -29,31 +19,19 @@
 /* Definition of the foot-bot proximity sensor */
 #include <argos3/plugins/robots/foot-bot/control_interface/ci_footbot_proximity_sensor.h>
 
-/*
- * All the ARGoS stuff in the 'argos' namespace.
- * With this statement, you save typing argos:: every time.
- */
-using namespace argos;
 
 /*
  * A controller is simply an implementation of the CCI_Controller class.
  */
-class CFootBotDiffusion : public CCI_Controller
-{
-
+class CFootBotAggregationOne : public argos::CCI_Controller {
 public:
-   /* Class constructor. */
-   CFootBotDiffusion();
-
-   /* Class destructor. */
-   virtual ~CFootBotDiffusion() {}
-
+   CFootBotAggregationOne();
    /*
     * This function initializes the controller.
     * The 't_node' variable points to the <parameters> section in the XML
-    * file in the <controllers><footbot_diffusion_controller> section.
+    * file in the <controllers><footbot_basictest_controller> section.
     */
-   virtual void Init(TConfigurationNode &t_node);
+   virtual void Init(argos::TConfigurationNode& t_node);
 
    /*
     * This function is called once every time step.
@@ -78,36 +56,39 @@ public:
     * completeness.
     */
    virtual void Destroy() {}
-
+public:
+   const inline static uint16_t HOPCOUNT_MAX{100u};
 private:
+
    /* Pointer to the differential steering actuator */
-   CCI_DifferentialSteeringActuator *m_pcWheels;
+   argos::CCI_DifferentialSteeringActuator* m_pcWheels;
    /* Pointer to the foot-bot proximity sensor */
-   CCI_FootBotProximitySensor *m_pcProximity;
+   argos::CCI_FootBotProximitySensor* m_pcProximity;
 
    /*
     * The following variables are used as parameters for the
     * algorithm. You can set their value in the <parameters> section
     * of the XML configuration file, under the
-    * <controllers><footbot_diffusion_controller> section.
+    * <controllers><footbot_basictest_controller> section.
     */
 
    /* Maximum tolerance for the angle between
     * the robot heading direction and
     * the closest obstacle detected. */
-   CDegrees m_cAlpha;
+   argos::CDegrees m_cAlpha;
    /* Maximum tolerance for the proximity reading between
     * the robot and the closest obstacle.
     * The proximity reading is 0 when nothing is detected
     * and grows exponentially to 1 when the obstacle is
     * touching the robot.
     */
-   Real m_fDelta;
+   argos::Real m_fDelta;
    /* Wheel speed. */
-   Real m_fWheelVelocity;
+   argos::Real m_fWheelVelocity;
    /* Angle tolerance range to go straight.
     * It is set to [-alpha,alpha]. */
-   CRange<CRadians> m_cGoStraightAngleRange;
+   argos::CRange<argos::CRadians> m_cGoStraightAngleRange;
+
 };
 
 #endif

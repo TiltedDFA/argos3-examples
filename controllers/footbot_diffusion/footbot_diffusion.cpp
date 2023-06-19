@@ -4,7 +4,7 @@
 #include <argos3/core/utility/configuration/argos_configuration.h>
 /* 2D vector definition */
 #include <argos3/core/utility/math/vector2.h>
-
+#define __MALMACRO_LOG(comment,data) std::cout << (comment) << (data) << std::endl
 /****************************************/
 /****************************************/
 
@@ -53,8 +53,10 @@ void CFootBotDiffusion::Init(TConfigurationNode& t_node) {
     * have to recompile if we want to try other settings.
     */
    GetNodeAttributeOrDefault(t_node, "alpha", m_cAlpha, m_cAlpha);
+   __MALMACRO_LOG("Inital alpha val is: ", m_cAlpha);
    m_cGoStraightAngleRange.Set(-ToRadians(m_cAlpha), ToRadians(m_cAlpha));
    GetNodeAttributeOrDefault(t_node, "delta", m_fDelta, m_fDelta);
+   __MALMACRO_LOG("Inital delta val is: ", m_fDelta);
    GetNodeAttributeOrDefault(t_node, "velocity", m_fWheelVelocity, m_fWheelVelocity);
 }
 
@@ -63,16 +65,21 @@ void CFootBotDiffusion::Init(TConfigurationNode& t_node) {
 
 void CFootBotDiffusion::ControlStep() {
    /* Get readings from proximity sensor */
+   //the readings are a vector holding a struct which holds an angle and a value
    const CCI_FootBotProximitySensor::TReadings& tProxReads = m_pcProximity->GetReadings();
    /* Sum them together */
    CVector2 cAccumulator;
-   for(size_t i = 0; i < tProxReads.size(); ++i) {
+   for(size_t i = 0; i < tProxReads.size(); ++i) 
+   {
+      if(i < 3) std::cout << "S" << (i+1) << " = V:" << tProxReads[i].Value << ", A:" << tProxReads[i].Angle.GetValue() << std::endl;
       cAccumulator += CVector2(tProxReads[i].Value, tProxReads[i].Angle);
    }
+   //finds average reading - divides both the angles and the value stored
    cAccumulator /= tProxReads.size();
    /* If the angle of the vector is small enough and the closest obstacle
     * is far enough, continue going straight, otherwise curve a little
     */
+   std::cout << "avg val: " << cAccumulator.Length() << " ,avg angle: " << cAccumulator.Angle() << std::endl;
    CRadians cAngle = cAccumulator.Angle();
    if(m_cGoStraightAngleRange.WithinMinBoundIncludedMaxBoundIncluded(cAngle) &&
       cAccumulator.Length() < m_fDelta ) {
