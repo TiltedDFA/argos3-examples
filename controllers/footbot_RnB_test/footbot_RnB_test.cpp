@@ -8,6 +8,9 @@
 /****************************************/
 /****************************************/
 #define __LOG_PROX_READINGS 0
+#define __LOG_RNB_ACT 1
+#define __LOG_RNB_SEN 1
+
 CFootBotRnBTest::CFootBotRnBTest() :
    wheels_(NULL),
    proximity_sen_(NULL),
@@ -40,13 +43,22 @@ void CFootBotRnBTest::ControlStep() {
    const CCI_FootBotProximitySensor::TReadings& prox_readings = proximity_sen_->GetReadings();
 
    rnb_actuator_->ClearData();
-   rnb_actuator_->SetData(0,1);
+
+   rnb_actuator_->SetData(0,(GetId()[2])&1);
+
+#if __LOG_RNB_SEN == 1
+   std::cout << "Bot ID:" << GetId() << " SEND: " << static_cast<unsigned>((GetId()[2])&1) << std::endl;
+#endif
 
    const auto& rnb_sensor_readings = rnb_sensor_->GetReadings();
+
+#if __LOG_RNB_ACT == 1
    for(size_t i = 0; i < rnb_sensor_readings.size(); ++i)
    {
-      std::cout << "Bot ID:" << GetId() << " READ: " << (i+1) << rnb_sensor_readings[i].Data[0] << std::endl;
+      std::cout << "Bot ID:" << GetId() << " READ: " << (i+1) <<" DATA" << rnb_sensor_readings[i].Data[0] << std::endl;
    }
+#endif
+
    CVector2 readings_avg;
    for(size_t i = 0; i < prox_readings.size(); ++i) 
    {
