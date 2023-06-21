@@ -8,8 +8,8 @@
 /****************************************/
 /****************************************/
 #define __LOG_PROX_READINGS 0
-#define __LOG_RNB_ACT 1
-#define __LOG_RNB_SEN 1
+#define __LOG_RNB_ACT 0
+#define __LOG_RNB_SEN 0
 
 CFootBotRnBTest::CFootBotRnBTest() :
    wheels_(NULL),
@@ -43,7 +43,8 @@ void CFootBotRnBTest::ControlStep() {
    const CCI_FootBotProximitySensor::TReadings& prox_readings = proximity_sen_->GetReadings();
 
    rnb_actuator_->ClearData();
-
+   //sends data on channel 0. (GetId()[2])&1) is used to send unique data based on robo ID.
+   //I will need to implament a more robust way of doing this later. 
    rnb_actuator_->SetData(0,(GetId()[2])&1);
 
 #if __LOG_RNB_SEN == 1
@@ -53,6 +54,7 @@ void CFootBotRnBTest::ControlStep() {
    const auto& rnb_sensor_readings = rnb_sensor_->GetReadings();
 
 #if __LOG_RNB_ACT == 1
+   //recieves data and displays it. Should work with. need to
    for(size_t i = 0; i < rnb_sensor_readings.size(); ++i)
    {
       std::cout << "Bot ID:" << GetId() << " READ: " << (i+1) <<" DATA" << rnb_sensor_readings[i].Data[0] << std::endl;

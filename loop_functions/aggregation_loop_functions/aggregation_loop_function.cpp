@@ -48,8 +48,7 @@ void CAggregationLoopFunctions::Init(argos::TConfigurationNode& t_tree)
             itDistr->Value() != "cluster" &&
             itDistr->Value() != "scalefree") 
          {
-            argos::THROW_ARGOSEXCEPTION("Unknown topology \"" << itDistr->Value() << "\"");
-            
+           THROW_ARGOSEXCEPTION("Unknown topology \"" << itDistr->Value() << "\"");
          }
          /* Get current node */
          argos::TConfigurationNode& tDistr = *itDistr;
@@ -91,7 +90,7 @@ void CAggregationLoopFunctions::Init(argos::TConfigurationNode& t_tree)
    }
    catch(argos::CARGoSException& ex) 
    {
-      argos::THROW_ARGOSEXCEPTION_NESTED("Error initializing the loop functions", ex);
+      THROW_ARGOSEXCEPTION_NESTED("Error initializing the loop functions", ex);
    }
 }
 
@@ -178,13 +177,13 @@ void CAggregationLoopFunctions::PlaceCluster(const argos::CVector2& c_center,
             bDone = MoveEntity(pcFB->GetEmbodiedEntity(), cFBPos, cFBRot);
          } while(!bDone && unTrials <= MAX_PLACE_TRIALS);
          if(!bDone) {
-            argos::THROW_ARGOSEXCEPTION("Can't place " << cFBId.str());
+            THROW_ARGOSEXCEPTION("Can't place " << cFBId.str());
          }
       }
    }
    catch(argos::CARGoSException& ex) 
    {
-      argos::THROW_ARGOSEXCEPTION_NESTED("While placing robots in a cluster", ex);
+      THROW_ARGOSEXCEPTION_NESTED("While placing robots in a cluster", ex);
    }
 }
 
@@ -249,7 +248,7 @@ struct SFData
          /* One element stored, just return that one */
          return Data.front();
       }
-      else argos::THROW_ARGOSEXCEPTION("SFData::Pick(): empty structure");
+      else THROW_ARGOSEXCEPTION("SFData::Pick(): empty structure");
    }
 
 private:
@@ -339,7 +338,7 @@ void CAggregationLoopFunctions::PlaceScaleFree(const argos::CVector2& c_center,
          /* Was the robot placed successfully? */
          if(!bDone) 
          {
-            argos::THROW_ARGOSEXCEPTION("Can't place " << cFBId.str());
+            THROW_ARGOSEXCEPTION("Can't place " << cFBId.str());
          }
          /* Yes, insert it in the data structure */
          ++psPivot->Conns;
@@ -348,7 +347,7 @@ void CAggregationLoopFunctions::PlaceScaleFree(const argos::CVector2& c_center,
    }
    catch(argos::CARGoSException& ex) 
    {
-      argos::THROW_ARGOSEXCEPTION_NESTED("While placing robots in a scale-free distribution", ex);
+      THROW_ARGOSEXCEPTION_NESTED("While placing robots in a scale-free distribution", ex);
    }
 }
 REGISTER_LOOP_FUNCTIONS(CAggregationLoopFunctions, "aggregation_loop_function");

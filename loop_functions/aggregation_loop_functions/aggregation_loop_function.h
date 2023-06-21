@@ -6,7 +6,8 @@
 
 using argos::CARGoSException;
 
-class CAggregationLoopFunctions : public argos::CLoopFunctions {
+class CAggregationLoopFunctions : public argos::CLoopFunctions 
+{
 
 public:
 
