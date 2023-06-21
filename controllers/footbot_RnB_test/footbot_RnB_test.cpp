@@ -7,7 +7,7 @@
 #define __MALMACRO_LOG(comment,data) std::cout << (comment) << (data) << std::endl
 /****************************************/
 /****************************************/
-
+#define __LOG_PROX_READINGS 0
 CFootBotRnBTest::CFootBotRnBTest() :
    wheels_(NULL),
    proximity_sen_(NULL),
@@ -37,31 +37,53 @@ void CFootBotRnBTest::Init(TConfigurationNode& t_node) {
 /****************************************/
 
 void CFootBotRnBTest::ControlStep() {
-   const CCI_FootBotProximitySensor::TReadings& tProxReads = proximity_sen_->GetReadings();
+   const CCI_FootBotProximitySensor::TReadings& prox_readings = proximity_sen_->GetReadings();
 
-   CVector2 cAccumulator;
-   for(size_t i = 0; i < tProxReads.size(); ++i) {
-      if(i < 3) std::cout << "S" << (i+1) << " = V:" << tProxReads[i].Value << ", A:" << tProxReads[i].Angle.GetValue() << std::endl;
-      cAccumulator += CVector2(tProxReads[i].Value, tProxReads[i].Angle);
+   rnb_actuator_->ClearData();
+   rnb_actuator_->SetData(0,1);
+
+   const auto& rnb_sensor_readings = rnb_sensor_->GetReadings();
+   for(size_t i = 0; i < rnb_sensor_readings.size(); ++i)
+   {
+      std::cout << "Bot ID:" << GetId() << " READ: " << (i+1) << rnb_sensor_readings[i].Data[0] << std::endl;
+   }
+   CVector2 readings_avg;
+   for(size_t i = 0; i < prox_readings.size(); ++i) 
+   {
+#if __LOG_PROX_READINGS == 1
+      if(i < 3) 
+      {
+         std::cout <<
+         "S" << (i+1) << 
+         " = V:" << prox_readings[i].Value << 
+         ", A:" << prox_readings[i].Angle.GetValue() << 
+         std::endl;
+      }
+#endif
+      readings_avg += CVector2(prox_readings[i].Value, prox_readings[i].Angle);
    }
 
-   cAccumulator /= tProxReads.size();
-
-   std::cout << "Average Value is " << cAccumulator.Length() << std::endl;
-   CRadians cAngle = cAccumulator.Angle();
-   //wheels_->SetLinearVelocity(wheel_velocity_,wheel_velocity_);
+   readings_avg /= prox_readings.size();
+#if __LOG_PROX_READINGS == 1
+   std::cout << "Average Value is " << readings_avg.Length() << std::endl;
+#endif
+   CRadians cAngle = readings_avg.Angle();
 
    if(turning_thresholds_.WithinMinBoundIncludedMaxBoundIncluded(cAngle) &&
-      cAccumulator.Length() < delta_ ) {
+      readings_avg.Length() < delta_ ) 
+   {
       /* Go straight */
       wheels_->SetLinearVelocity(wheel_velocity_, wheel_velocity_);
    }
-   else {
+   else 
+   {
       /* Turn, depending on the sign of the angle */
-      if(cAngle.GetValue() > 0.0f) {
+      if(cAngle.GetValue() > 0.0f) 
+      {
          wheels_->SetLinearVelocity(wheel_velocity_, 0.0f);
       }
-      else {
+      else 
+      {
          wheels_->SetLinearVelocity(0.0f, wheel_velocity_);
       }
    }
