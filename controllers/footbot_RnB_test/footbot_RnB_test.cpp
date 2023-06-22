@@ -45,6 +45,7 @@ void CFootBotRnBTest::ControlStep() {
    rnb_actuator_->ClearData();
    //sends data on channel 0. (GetId()[2])&1) is used to send unique data based on robo ID.
    //I will need to implament a more robust way of doing this later. 
+   //I am assuming that each roboto's "Set Data" Method would count as an induvidual packet 
    rnb_actuator_->SetData(0,(GetId()[2])&1);
 
 #if __LOG_RNB_SEN == 1

@@ -11,21 +11,35 @@
 CFootBotAggregationOne::CFootBotAggregationOne():
                                                    wheels_(NULL),
                                                    proximity_sen_(NULL),
+                                                   rnb_actuator_(NULL),
+                                                   rnb_sensor_(NULL),               
                                                    wheel_velocity_(2.5f),
+                                                   delta_(0.5f),
+                                                   alpha_(10.0f),
+                                                   hopcount_max(100u),
+                                                   forgetting_allowed_(false),
+                                                   forgetting_time_period_(2000u),
+                                                   current_hopcount_(0u),
                                                    navigation_threshold_(
                                                       -argos::ToRadians(ALPHA),
                                                       argos::ToRadians(ALPHA)) {}
 
 void CFootBotAggregationOne::Init(argos::TConfigurationNode& t_node) 
 {
-   wheels_    = GetActuator<argos::CCI_DifferentialSteeringActuator>("differential_steering");
+   wheels_            =    GetActuator<argos::CCI_DifferentialSteeringActuator>("differential_steering");
+   proximity_sen_     =    GetSensor  <argos::CCI_FootBotProximitySensor      >("footbot_proximity"    );
+   rnb_actuator_      =    GetActuator<argos::CCI_RangeAndBearingActuator     >("range_and_bearing"    );
+   rnb_sensor_        =    GetSensor  <argos::CCI_RangeAndBearingSensor       >("range_and_bearing"    );
 
-   proximity_sen_ = GetSensor  <argos::CCI_FootBotProximitySensor      >("footbot_proximity"    );
+   argos::GetNodeAttributeOrDefault<argos::Real>(t_node, "velocity", wheel_velocity_, wheel_velocity_);
+   argos::GetNodeAttributeOrDefault<argos::Real>(t_node, "delta", delta_, delta_);
+   argos::GetNodeAttributeOrDefault<argos::Real>(t_node, "alpha", alpha_, alpha_);
+   argos::GetNodeAttributeOrDefault<uint16_t>(t_node, "hopcountmax", hopcount_max, hopcount_max);
+   argos::GetNodeAttributeOrDefault<bool>(t_node, "forgettingallowed", forgetting_allowed_, forgetting_allowed_);
+   argos::GetNodeAttributeOrDefault<uint16_t>(t_node, "forgettingtimeperiod", forgetting_time_period_, forgetting_time_period_);
 
+   navigation_threshold_.Set(-argos::ToRadians(alpha_), argos::ToRadians(alpha_));
 
-   navigation_threshold_.Set(-ToRadians(ALPHA), ToRadians(ALPHA));
-
-   argos::GetNodeAttributeOrDefault(t_node, "velocity", wheel_velocity_, wheel_velocity_);
 }
 
 void CFootBotAggregationOne::ControlStep() 
