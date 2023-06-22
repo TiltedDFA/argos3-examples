@@ -10,6 +10,7 @@
 #define __LOG_PROX_READINGS 0
 #define __LOG_RNB_ACT 0
 #define __LOG_RNB_SEN 0
+#define __LOG_RNB_ALL_SEN 1
 
 CFootBotRnBTest::CFootBotRnBTest() :
    wheels_(NULL),
@@ -48,13 +49,18 @@ void CFootBotRnBTest::ControlStep() {
    //I am assuming that each roboto's "Set Data" Method would count as an induvidual packet 
    rnb_actuator_->SetData(0,(GetId()[2])&1);
 
-#if __LOG_RNB_SEN == 1
+#if __LOG_RNB_ACT == 1
    std::cout << "Bot ID:" << GetId() << " SEND: " << static_cast<unsigned>((GetId()[2])&1) << std::endl;
 #endif
 
    const auto& rnb_sensor_readings = rnb_sensor_->GetReadings();
-
-#if __LOG_RNB_ACT == 1
+#if __LOG_RNB_ALL_SEN == 1 
+   for(const auto& i : rnb_sensor_readings)
+   {
+      std::cout << "ID:" << GetId() << " R:" << i.Range << " Bh:" << i.HorizontalBearing << std::endl;  
+   }
+#endif
+#if __LOG_RNB_SEN == 1
    //recieves data and displays it. Should work with. need to
    for(size_t i = 0; i < rnb_sensor_readings.size(); ++i)
    {

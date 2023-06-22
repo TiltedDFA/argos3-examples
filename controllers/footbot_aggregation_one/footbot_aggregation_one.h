@@ -17,9 +17,8 @@
 
 enum class aggregation_state:uint8_t 
 {
-   MoveTowardsTarget,
    MoveRandomly,
-   Halt,
+   MoveTowardsTarget,
    Forgetting
 };
 
@@ -41,8 +40,8 @@ private:
    //The group below is to be read from the XML 
    argos::Real wheel_velocity_;
    argos::Real delta_;
-   argos::Real alpha_;
-   uint16_t hopcount_max;
+   argos::CDegrees alpha_;
+   uint16_t hopcount_max_;
    bool forgetting_allowed_;
    uint16_t forgetting_time_period_;
 

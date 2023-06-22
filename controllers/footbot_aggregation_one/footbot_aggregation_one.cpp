@@ -4,7 +4,9 @@
 #include <argos3/core/utility/configuration/argos_configuration.h>
 /* 2D vector definition */
 #include <argos3/core/utility/math/vector2.h>
-#define __MALMACRO_LOG(comment,data) std::cout << (comment) << (data) << std::endl
+
+#define ___LOG(comment,data) std::cout << (comment) << (data) << std::endl
+#define __LOG_XML_DATA 1
 /****************************************/
 /****************************************/
 
@@ -16,13 +18,15 @@ CFootBotAggregationOne::CFootBotAggregationOne():
                                                    wheel_velocity_(2.5f),
                                                    delta_(0.5f),
                                                    alpha_(10.0f),
-                                                   hopcount_max(100u),
+                                                   hopcount_max_(100u),
                                                    forgetting_allowed_(false),
                                                    forgetting_time_period_(2000u),
                                                    current_hopcount_(0u),
-                                                   navigation_threshold_(
-                                                      -argos::ToRadians(ALPHA),
-                                                      argos::ToRadians(ALPHA)) {}
+                                                   navigation_threshold_
+                                                   (
+                                                      -argos::ToRadians(alpha_),
+                                                      argos::ToRadians(alpha_)
+                                                   ) {}
 
 void CFootBotAggregationOne::Init(argos::TConfigurationNode& t_node) 
 {
@@ -33,13 +37,21 @@ void CFootBotAggregationOne::Init(argos::TConfigurationNode& t_node)
 
    argos::GetNodeAttributeOrDefault<argos::Real>(t_node, "velocity", wheel_velocity_, wheel_velocity_);
    argos::GetNodeAttributeOrDefault<argos::Real>(t_node, "delta", delta_, delta_);
-   argos::GetNodeAttributeOrDefault<argos::Real>(t_node, "alpha", alpha_, alpha_);
-   argos::GetNodeAttributeOrDefault<uint16_t>(t_node, "hopcountmax", hopcount_max, hopcount_max);
+   argos::GetNodeAttributeOrDefault<argos::CDegrees>(t_node, "alpha", alpha_, alpha_);
+   argos::GetNodeAttributeOrDefault<uint16_t>(t_node, "hopcountmax", hopcount_max_, hopcount_max_);
    argos::GetNodeAttributeOrDefault<bool>(t_node, "forgettingallowed", forgetting_allowed_, forgetting_allowed_);
    argos::GetNodeAttributeOrDefault<uint16_t>(t_node, "forgettingtimeperiod", forgetting_time_period_, forgetting_time_period_);
 
    navigation_threshold_.Set(-argos::ToRadians(alpha_), argos::ToRadians(alpha_));
 
+#if __LOG_XML_DATA == 1
+   ___LOG("velocity: ",wheel_velocity_);
+   ___LOG("delta: ",delta_);
+   ___LOG("alpha: ",alpha_);
+   ___LOG("HCmax: ",hopcount_max_);
+   ___LOG("Forgetting?: ",forgetting_allowed_);
+   ___LOG("Forgetting time period: ", forgetting_time_period_);
+#endif
 }
 
 void CFootBotAggregationOne::ControlStep() 

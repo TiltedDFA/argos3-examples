@@ -49,8 +49,8 @@
         - library: the path to the compiled library containing you
           controller.
     -->
-    <footbot_diffusion_controller id="fdc"
-                                  library="build/controllers/footbot_diffusion/libfootbot_diffusion">
+    <footbot_aggregation_one id="fao"
+                                  library="build/controllers/footbot_aggregation_one/libfootbot_aggregation_one">
       <!--
           The <actuators> section contains a list of the actuators used by
           this controller.
@@ -72,6 +72,7 @@
       -->
       <actuators>
         <differential_steering implementation="default" />
+        <range_and_bearing implementation="default" />
       </actuators>
       <!--
           The <sensors> section contains a list of the sensors used by
@@ -83,6 +84,7 @@
       -->
       <sensors>
         <footbot_proximity implementation="default" show_rays="true" />
+        <range_and_bearing implementation="medium" medium="rab" />
       </sensors>
       <!--
           The <params> section is passed as-is to the controller's Init()
@@ -94,8 +96,15 @@
       -->
       <!--  The default values are A= 7.5 D=0.1 V=5. Delta seems to be turing threshold.
             Alpha is "Angle tolerance range to go straight" (?written here in degrees?)-->>
-      <params alpha="100" delta="0.0000000000000000000000001" velocity="5" />
-    </footbot_diffusion_controller>
+      <params
+        alpha="10" 
+        delta="0.1" 
+        velocity="5" 
+        hopcountmax="100"
+        forgettingallowed="0"
+        forgettingtimeperiod="2000"
+      />  
+    </footbot_aggregation_one>
 
   </controllers>
 
@@ -134,10 +143,15 @@
     </box>
 
     <!-- Place a foot-bot in the origin and bind it to the controller -->
-    <foot-bot id="fb_0">
-      <body position="0,0,0" orientation="0,0,0" />
-      <controller config="fdc"/>
-    </foot-bot>
+    <distribute>
+      <position method="uniform" min="0,0,0" max="1,1,0" />
+      <orientation method="uniform" min="0,0,0" max="360,0,0" />
+      <entity quantity="2" max_trials="100">
+        <foot-bot id="fb">
+          <controller config="fao" />
+        </foot-bot>
+      </entity>
+    </distribute>
 
   </arena>
 
@@ -169,7 +183,9 @@
 
       $ argos3 -q media
   -->
-  <media />
+  <media>
+    <range_and_bearing id="rab" />
+  </media>
 
   <!-- ****************** -->
   <!-- * Visualization * -->

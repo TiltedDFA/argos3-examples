@@ -17,7 +17,8 @@ void CIDQTUserFunctions::Draw(CFootBotEntity& c_entity) {
     * $ argos3 -q foot-bot
     */
    DrawText(CVector3(0.0, 0.0, 0.3),   // position
-            c_entity.GetId().c_str()); // text
+            c_entity.GetId().c_str(),
+            CColor::WHITE); // text
 }
 
 /****************************************/
