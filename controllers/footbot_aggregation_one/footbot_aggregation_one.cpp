@@ -7,6 +7,7 @@
 
 #define ___LOG(comment,data) std::cout << (comment) << (data) << std::endl
 #define __LOG_XML_DATA 1
+#define __LOG_PROX_DATA 0
 /****************************************/
 /****************************************/
 
@@ -62,6 +63,7 @@ void CFootBotAggregationOne::ControlStep()
 
    for(size_t i = 0; i < proximity_readings.size(); ++i) 
    {
+#if __LOG_PROX_DATA == 1
       if(i < 3) 
       {
          std::cout <<
@@ -70,6 +72,7 @@ void CFootBotAggregationOne::ControlStep()
          ", A:"    << proximity_readings[i].Angle.GetValue() <<
          std::endl;
       }
+#endif
       cAccumulator += argos::CVector2(proximity_readings[i].Value, proximity_readings[i].Angle);
    }
 
