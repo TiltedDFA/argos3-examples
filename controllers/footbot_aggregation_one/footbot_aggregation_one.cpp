@@ -10,7 +10,38 @@
 #define __LOG_PROX_DATA 0
 /****************************************/
 /****************************************/
-
+CRotationHandler::CRotationHandler(argos::Real robo_wheel_vel)
+   :
+   rot_frames_remaining_(0),
+   time_needed_180_(static_cast<uint8_t>(223/robo_wheel_vel))
+{}
+void CRotationHandler::FindTimeNeededFor180(argos::Real robo_wheel_vel)
+{
+   time_needed_180_ = static_cast<uint8_t>(223/robo_wheel_vel);
+}
+void CRotationHandler::FindFramesNeeded(argos::Real desired_turning_angle)
+{
+   if(desired_turning_angle == 0)return;
+   if(desired_turning_angle < 0)
+   {
+      desired_turning_angle *= -1;
+      rot_frames_remaining_ = static_cast<int8_t>(-((desired_turning_angle/180)*time_needed_180_));
+      return;
+   }
+   rot_frames_remaining_ = static_cast<int8_t>((desired_turning_angle/180)*time_needed_180_);
+}
+void CRotationHandler::ApproachZero()
+{
+   if(rot_frames_remaining_ == 0)return;
+   if(rot_frames_remaining_ < 0)
+   {
+      ++rot_frames_remaining_;
+      return;
+   }
+   --rot_frames_remaining_;
+}
+/****************************************/
+/****************************************/
 CFootBotAggregationOne::CFootBotAggregationOne():
                                                    wheels_(NULL),
                                                    proximity_sen_(NULL),
@@ -22,6 +53,7 @@ CFootBotAggregationOne::CFootBotAggregationOne():
                                                    hopcount_max_(100u),
                                                    forgetting_allowed_(false),
                                                    forgetting_time_period_(2000u),
+                                                   rotation_handler_(wheel_velocity_),
                                                    current_hopcount_(0u),
                                                    navigation_threshold_
                                                    (
@@ -42,7 +74,8 @@ void CFootBotAggregationOne::Init(argos::TConfigurationNode& t_node)
    argos::GetNodeAttributeOrDefault<uint16_t>(t_node, "hopcountmax", hopcount_max_, hopcount_max_);
    argos::GetNodeAttributeOrDefault<bool>(t_node, "forgettingallowed", forgetting_allowed_, forgetting_allowed_);
    argos::GetNodeAttributeOrDefault<uint16_t>(t_node, "forgettingtimeperiod", forgetting_time_period_, forgetting_time_period_);
-
+   
+   rotation_handler_ = CRotationHandler(wheel_velocity_);
    navigation_threshold_.Set(-argos::ToRadians(alpha_), argos::ToRadians(alpha_));
 
 #if __LOG_XML_DATA == 1
@@ -54,10 +87,31 @@ void CFootBotAggregationOne::Init(argos::TConfigurationNode& t_node)
    ___LOG("Forgetting time period: ", forgetting_time_period_);
 #endif
 }
+void CFootBotAggregationOne::Move()
+{
 
+}
 void CFootBotAggregationOne::ControlStep() 
 {
-   const argos::CCI_FootBotProximitySensor::TReadings& proximity_readings = proximity_sen_->GetReadings();
+   if(rotation_handler_.rot_frames_remaining_ != 0)
+   {
+      if(rotation_handler_.rot_frames_remaining_ < 0)
+      {
+
+      }
+   }
+  //if target found
+  if(0)
+  {
+      current_hopcount_ = 0;
+      
+      return;
+  }
+  //if()
+  wheels_->SetLinearVelocity(wheel_velocity_,wheel_velocity_);
+}
+/*
+    const argos::CCI_FootBotProximitySensor::TReadings& proximity_readings = proximity_sen_->GetReadings();
 
    argos::CVector2 cAccumulator;
 
@@ -83,6 +137,5 @@ void CFootBotAggregationOne::ControlStep()
    argos::CRadians cAngle = cAccumulator.Angle();
 
    wheels_->SetLinearVelocity(wheel_velocity_,wheel_velocity_);
-}
-
+*/
 REGISTER_CONTROLLER(CFootBotAggregationOne, "footbot_aggregation_one")

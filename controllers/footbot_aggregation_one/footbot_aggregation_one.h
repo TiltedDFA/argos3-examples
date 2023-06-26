@@ -5,7 +5,7 @@
  * described in Schmickl T, Möslinger C, Crailsheim K 2007 Collective perception in a robot swarm. Swarm
  * Robotics, (Springer, Berlin) pp.144–157
  */
-
+// 89 time steps to do 360 turn when wheel speed is (5,-5)
 #ifndef FOOTBOT_AGGREGATION_ONE_H
 #define FOOTBOT_AGGREGATION_ONE_H
 
@@ -15,22 +15,34 @@
 #include <argos3/plugins/robots/foot-bot/control_interface/ci_footbot_proximity_sensor.h>
 #include <argos3/plugins/robots/generic/control_interface/ci_range_and_bearing_actuator.h>
 #include <argos3/plugins/robots/generic/control_interface/ci_range_and_bearing_sensor.h>
+#include <random>
 
-enum class aggregation_state:uint8_t 
+struct CRotationHandler
 {
-   MoveRandomly,
-   MoveTowardsTarget,
-   Forgetting
+   CRotationHandler()=delete;
+   CRotationHandler(argos::Real robo_wheel_vel);
+   ~CRotationHandler()=default;
+   void FindTimeNeededFor180(argos::Real robo_wheel_vel);
+   void FindFramesNeeded(argos::Real desired_turning_angle);
+   void ApproachZero();
+   
+   int8_t rot_frames_remaining_;
+   uint8_t time_needed_180_;
 };
-
-class CFootBotAggregationOne : public argos::CCI_Controller {
+class CFootBotAggregationOne : public argos::CCI_Controller 
+{
 public:
    CFootBotAggregationOne();
    virtual void Init(argos::TConfigurationNode& t_node);
+   void Move();
    virtual void ControlStep();
    virtual void Reset() {}
    virtual void Destroy() {}
-
+public:
+   //threadsafe random number gen
+   inline static std::mt19937 rng_{std::random_device{}()};
+   //will be used to generate a random direction for the robots to switch to
+   inline static std::uniform_int_distribution<int16_t> rng_angle_{-180,180};
 private:
    //robot components
    argos::CCI_DifferentialSteeringActuator* wheels_;
@@ -46,7 +58,8 @@ private:
    bool forgetting_allowed_;
    uint16_t forgetting_time_period_;
 
-   //Other variables
+   //Other internal variables
+   CRotationHandler rotation_handler_;
    uint16_t current_hopcount_;
    argos::CRange<argos::CRadians> navigation_threshold_;
 };

@@ -64,6 +64,7 @@ void CFootBotDiffusion::Init(TConfigurationNode& t_node) {
 /****************************************/
 
 void CFootBotDiffusion::ControlStep() {
+
    /* Get readings from proximity sensor */
    //the readings are a vector holding a struct which holds an angle and a value
    const CCI_FootBotProximitySensor::TReadings& tProxReads = m_pcProximity->GetReadings();
@@ -71,7 +72,7 @@ void CFootBotDiffusion::ControlStep() {
    CVector2 cAccumulator;
    for(size_t i = 0; i < tProxReads.size(); ++i) 
    {
-      if(i < 3) std::cout << "S" << (i+1) << " = V:" << tProxReads[i].Value << ", A:" << tProxReads[i].Angle.GetValue() << std::endl;
+      if(i < 1) std::cout << "S" << (i+1) << " = V:" << tProxReads[i].Value << ", A:" << tProxReads[i].Angle.GetValue() << std::endl;
       cAccumulator += CVector2(tProxReads[i].Value, tProxReads[i].Angle);
    }
    //finds average reading - divides both the angles and the value stored
@@ -81,20 +82,23 @@ void CFootBotDiffusion::ControlStep() {
     */
    std::cout << "avg val: " << cAccumulator.Length() << " ,avg angle: " << cAccumulator.Angle() << std::endl;
    CRadians cAngle = cAccumulator.Angle();
-   if(m_cGoStraightAngleRange.WithinMinBoundIncludedMaxBoundIncluded(cAngle) &&
-      cAccumulator.Length() < m_fDelta ) {
-      /* Go straight */
-      m_pcWheels->SetLinearVelocity(m_fWheelVelocity, m_fWheelVelocity);
-   }
-   else {
-      /* Turn, depending on the sign of the angle */
-      if(cAngle.GetValue() > 0.0f) {
-         m_pcWheels->SetLinearVelocity(m_fWheelVelocity, 0.0f);
-      }
-      else {
-         m_pcWheels->SetLinearVelocity(0.0f, m_fWheelVelocity);
-      }
-   }
+
+   m_pcWheels->SetLinearVelocity(m_fWheelVelocity, -m_fWheelVelocity);
+
+   // if(m_cGoStraightAngleRange.WithinMinBoundIncludedMaxBoundIncluded(cAngle) &&
+   //    cAccumulator.Length() < m_fDelta ) {
+   //    /* Go straight */
+   //    m_pcWheels->SetLinearVelocity(m_fWheelVelocity, m_fWheelVelocity);
+   // }
+   // else {
+   //    /* Turn, depending on the sign of the angle */
+   //    if(cAngle.GetValue() > 0.0f) {
+   //       m_pcWheels->SetLinearVelocity(m_fWheelVelocity, 0.0f);
+   //    }
+   //    else {
+   //       m_pcWheels->SetLinearVelocity(0.0f, m_fWheelVelocity);
+   //    }
+   // }
 }
 
 /****************************************/
