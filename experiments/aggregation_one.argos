@@ -98,11 +98,10 @@
             Alpha is "Angle tolerance range to go straight" (?written here in degrees?)-->>
       <params
         alpha="10" 
-        delta="0.1" 
+        delta="0.000001" 
         velocity="5" 
         hopcountmax="100"
         forgettingallowed="0"
-        forgettingtimeperiod="2000"
       />  
     </footbot_aggregation_one>
 

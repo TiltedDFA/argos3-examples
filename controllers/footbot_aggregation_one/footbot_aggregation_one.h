@@ -32,12 +32,11 @@ struct CRotationHandler
 struct CHopCountManager
 {
    CHopCountManager()=delete;
-   CHopCountManager(bool forgetting_allowed_,uint16_t hopcount_max_,uint16_t forgetting_time_period_);
+   CHopCountManager(bool forgetting_allowed_,uint16_t hopcount_max_);
    void update();
 
-   const bool forgetting_allowed_;
-   const uint16_t hopcount_max_;
-   const uint16_t forgetting_time_period_;
+   bool forgetting_allowed_;
+   uint16_t hopcount_max_;
    uint16_t forget_tp_counter_;
    uint16_t current_hopcount_;
 };
@@ -68,6 +67,7 @@ private:
    
 
    //Other internal variables
+   CHopCountManager hop_count_;
    CRotationHandler rotation_handler_;
    argos::CRange<argos::CRadians> navigation_threshold_;
 };
