@@ -16,14 +16,19 @@
 #include <argos3/plugins/robots/generic/control_interface/ci_range_and_bearing_actuator.h>
 #include <argos3/plugins/robots/generic/control_interface/ci_range_and_bearing_sensor.h>
 #include <random>
-
+/**
+ * TODO
+ * DISPLAY HOPCOUNTS ALONG WITH IDS IN SIM
+ * CREATE TARGET AREAS FOR ROBOTS TO GO TO
+ * IMPLAMENT TARGET AREA FINDING SYSTEM
+ */
 struct CRotationHandler
 {
    CRotationHandler()=delete;
    CRotationHandler(argos::Real robo_wheel_vel);
    ~CRotationHandler()=default;
    void FindTimeNeededFor180(argos::Real robo_wheel_vel);
-   void FindFramesNeeded(argos::Real desired_turning_angle);
+   void RotateTo(argos::Real desired_turning_angle);
    void ApproachZero();
    
    int8_t rot_frames_remaining_;

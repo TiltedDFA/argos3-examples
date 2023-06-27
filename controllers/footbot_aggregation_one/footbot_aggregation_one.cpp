@@ -17,11 +17,11 @@ void CRotationHandler::FindTimeNeededFor180(argos::Real robo_wheel_vel)
 {
    time_needed_180_ = static_cast<uint8_t>(223 / robo_wheel_vel);
 }
-void CRotationHandler::FindFramesNeeded(argos::Real desired_turning_angle)
+void CRotationHandler::RotateTo(argos::Real desired_turning_angle)
 {
    if (desired_turning_angle > 180 || desired_turning_angle < -180)
    {
-      std::cerr << "Incorrect angle input into CRotationHandler::FindFramesNeeded" << std::endl;
+      std::cerr << "Incorrect angle input into CRotationHandler::RotateTo" << std::endl;
       return;
    }
    if (desired_turning_angle == 0)
@@ -107,7 +107,7 @@ void CFootBotAggregationOne::Init(argos::TConfigurationNode &t_node)
    argos::GetNodeAttributeOrDefault<uint16_t>(t_node, "ForgettingTimePeriod", hop_count_.forgetting_tp_, hop_count_.forgetting_tp_);
 
    rotation_handler_ = CRotationHandler(wheel_velocity_);
-   rotation_handler_.FindFramesNeeded(rng_angle_(rng_));
+   rotation_handler_.RotateTo(rng_angle_(rng_));
    navigation_threshold_.Set(-argos::ToRadians(alpha_), argos::ToRadians(alpha_));
 
 #if __LOG_XML_DATA == 1
@@ -128,8 +128,28 @@ static inline argos::CVector2 FindAvg(const argos::CCI_FootBotProximitySensor::T
    }
    return (cAccumulator / readings.size());
 }
+static inline std::vector<argos::CCI_RangeAndBearingSensor::SPacket>::iterator FindMinSensorReading(argos::CCI_RangeAndBearingSensor::TReadings& rnb_readings, uint16_t hop_count_max)
+{
+   auto min_hc = hop_count_max;
+   auto min_index = 0;
+   for(int i = 0; i < rnb_readings.size();++i)
+   {
+      if(rnb_readings[i].Data[0] < hop_count_max && rnb_readings[i].Data[0] < rnb_readings[min_index].Data[0])
+      {
+         min_index = i;
+         min_hc = rnb_readings[i].Data[0];
+      }
+   }
+   if(rnb_readings[min_index].Data[0] == hop_count_max)
+   {
+      return rnb_readings.end();
+   }
+   return rnb_readings.begin() + min_index;
+}
 void CFootBotAggregationOne::ControlStep()
 {
+   rnb_actuator_->ClearData();
+   rnb_actuator_->SetData(0,hop_count_.current_hopcount_);
    // Turning
    if (rotation_handler_.rot_frames_remaining_ != 0)
    {
@@ -158,6 +178,12 @@ void CFootBotAggregationOne::ControlStep()
          wheels_->SetLinearVelocity(0, wheel_velocity_);
       }
       return;
+   }
+   argos::CCI_RangeAndBearingSensor::TReadings rnb_readings = rnb_sensor_->GetReadings();
+   const auto rnb_reading_min = FindMinSensorReading(rnb_readings,hop_count_.hopcount_max_);
+   if(rnb_reading_min != rnb_readings.end())
+   {
+      rotation_handler_.RotateTo(argos::ToDegrees(rnb_reading_min->HorizontalBearing).GetValue());
    }
    wheels_->SetLinearVelocity(wheel_velocity_, wheel_velocity_);
 }
