@@ -29,12 +29,23 @@ struct CRotationHandler
    int8_t rot_frames_remaining_;
    uint8_t time_needed_180_;
 };
+struct CHopCountManager
+{
+   CHopCountManager()=delete;
+   CHopCountManager(bool forgetting_allowed_,uint16_t hopcount_max_,uint16_t forgetting_time_period_);
+   void update();
+
+   const bool forgetting_allowed_;
+   const uint16_t hopcount_max_;
+   const uint16_t forgetting_time_period_;
+   uint16_t forget_tp_counter_;
+   uint16_t current_hopcount_;
+};
 class CFootBotAggregationOne : public argos::CCI_Controller 
 {
 public:
    CFootBotAggregationOne();
    virtual void Init(argos::TConfigurationNode& t_node);
-   void Move();
    virtual void ControlStep();
    virtual void Reset() {}
    virtual void Destroy() {}
@@ -54,13 +65,10 @@ private:
    argos::Real wheel_velocity_;
    argos::Real delta_;
    argos::CDegrees alpha_;
-   uint16_t hopcount_max_;
-   bool forgetting_allowed_;
-   uint16_t forgetting_time_period_;
+   
 
    //Other internal variables
    CRotationHandler rotation_handler_;
-   uint16_t current_hopcount_;
    argos::CRange<argos::CRadians> navigation_threshold_;
 };
 

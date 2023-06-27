@@ -42,6 +42,17 @@ void CRotationHandler::ApproachZero()
 }
 /****************************************/
 /****************************************/
+CHopCountManager::CHopCountManager( bool forgetting_allowed_,
+                                    uint16_t hopcount_max_,
+                                    uint16_t forgetting_time_period_)
+   :forgetting_allowed_(forgetting_allowed_),
+   hopcount_max_(hopcount_max_),
+   forgetting_time_period_(forgetting_time_period_),
+   forget_tp_counter_(0),
+   current_hopcount_(hopcount_max_)
+{}
+/****************************************/
+/****************************************/
 CFootBotAggregationOne::CFootBotAggregationOne():
                                                    wheels_(NULL),
                                                    proximity_sen_(NULL),
@@ -88,16 +99,15 @@ void CFootBotAggregationOne::Init(argos::TConfigurationNode& t_node)
    ___LOG("Forgetting time period: ", forgetting_time_period_);
 #endif
 }
-void CFootBotAggregationOne::Move()
+static inline argos::Real FindAvg(const CCI_FootBotProximitySensor::TReadings& readings)
 {
-
+   argos::CVector2 cAccumulator{0};
+   for(size_t i = 0; i < tProxReads.size(); ++i) 
+   {
+      cAccumulator += argos::CVector2(tProxReads[i].Value, tProxReads[i].Angle);
+   }
+   return (cAccumulator /= tProxReads.size()).Length();
 }
-   //    if(cAngle.GetValue() > 0.0f) {
-   //       m_pcWheels->SetLinearVelocity(m_fWheelVelocity, 0.0f);
-   //    }
-   //    else {
-   //       m_pcWheels->SetLinearVelocity(0.0f, m_fWheelVelocity);
-   //    }
 void CFootBotAggregationOne::ControlStep() 
 {
    //Turning
@@ -122,35 +132,9 @@ void CFootBotAggregationOne::ControlStep()
       
       return;
   }
+  argos::Real avg_prox_sen_angle = FindAvg(proximity_sen_->GetReadings());
+  if(avg_prox_sen_angle < delta_);
   //if()
   wheels_->SetLinearVelocity(wheel_velocity_,wheel_velocity_);
 }
-/*
-    const argos::CCI_FootBotProximitySensor::TReadings& proximity_readings = proximity_sen_->GetReadings();
-
-   argos::CVector2 cAccumulator;
-
-   for(size_t i = 0; i < proximity_readings.size(); ++i) 
-   {
-#if __LOG_PROX_DATA == 1
-      if(i < 3) 
-      {
-         std::cout <<
-         "Sensor"  << (i+1) <<
-         " = V:"   << proximity_readings[i].Value <<
-         ", A:"    << proximity_readings[i].Angle.GetValue() <<
-         std::endl;
-      }
-#endif
-      cAccumulator += argos::CVector2(proximity_readings[i].Value, proximity_readings[i].Angle);
-   }
-
-   cAccumulator /= proximity_readings.size();
-
-   std::cout << "Average Value is " << cAccumulator.Length() << std::endl;
-
-   argos::CRadians cAngle = cAccumulator.Angle();
-
-   wheels_->SetLinearVelocity(wheel_velocity_,wheel_velocity_);
-*/
 REGISTER_CONTROLLER(CFootBotAggregationOne, "footbot_aggregation_one")
