@@ -29,16 +29,19 @@ struct CRotationHandler
    int8_t rot_frames_remaining_;
    uint8_t time_needed_180_;
 };
-struct CHopCountManager
+//Would at some point like to change robo LED colour based on forgetting state
+struct CHopCountManager 
 {
    CHopCountManager()=delete;
-   CHopCountManager(bool forgetting_allowed_,uint16_t hopcount_max_);
+   CHopCountManager(bool forgetting_enabled,uint16_t hopcount_ma_,uint16_t forgetting_tp);
    void update();
 
-   bool forgetting_allowed_;
+   bool forgetting_enabled_;
+   uint16_t forgetting_tp_;
    uint16_t hopcount_max_;
    uint16_t forget_tp_counter_;
    uint16_t current_hopcount_;
+   bool currently_forgetting_;
 };
 class CFootBotAggregationOne : public argos::CCI_Controller 
 {

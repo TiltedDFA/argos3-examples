@@ -1,13 +1,11 @@
-/* Include the controller definition */
 #include "footbot_aggregation_one.h"
-/* Function definitions for XML parsing */
 #include <argos3/core/utility/configuration/argos_configuration.h>
-/* 2D vector definition */
 #include <argos3/core/utility/math/vector2.h>
 
 #define ___LOG(comment, data) std::cout << (comment) << (data) << std::endl
 #define __LOG_XML_DATA 1
 #define __LOG_PROX_DATA 0
+#define __LOG_FORGETTING 1
 /****************************************/
 /****************************************/
 CRotationHandler::CRotationHandler(argos::Real robo_wheel_vel)
@@ -21,7 +19,7 @@ void CRotationHandler::FindTimeNeededFor180(argos::Real robo_wheel_vel)
 }
 void CRotationHandler::FindFramesNeeded(argos::Real desired_turning_angle)
 {
-   if(desired_turning_angle > 180 || desired_turning_angle < -180)
+   if (desired_turning_angle > 180 || desired_turning_angle < -180)
    {
       std::cerr << "Incorrect angle input into CRotationHandler::FindFramesNeeded" << std::endl;
       return;
@@ -49,13 +47,36 @@ void CRotationHandler::ApproachZero()
 }
 /****************************************/
 /****************************************/
-CHopCountManager::CHopCountManager(bool forgetting_allowed_,
-                                   uint16_t hopcount_max_)
-    : forgetting_allowed_(forgetting_allowed_),
-      hopcount_max_(hopcount_max_),
+CHopCountManager::CHopCountManager(bool forgetting_allowed, uint16_t hopcount_max, uint16_t forgetting_tp)
+    : forgetting_enabled_(forgetting_allowed),
+      forgetting_tp_(forgetting_tp),
+      hopcount_max_(hopcount_max),
       forget_tp_counter_(0),
-      current_hopcount_(hopcount_max_)
+      current_hopcount_(hopcount_max),
+      currently_forgetting_(false)
 {}
+void CHopCountManager::update()
+{
+   if (!forgetting_enabled_)return;
+   
+   if (!currently_forgetting_ && forget_tp_counter_ == 0)
+   {
+      currently_forgetting_ = true;
+      return;
+   }
+   if (currently_forgetting_)
+   {
+      if (current_hopcount_ == hopcount_max_)
+      {
+         currently_forgetting_ = false;
+         forget_tp_counter_ = forgetting_tp_;
+         return;
+      }
+      ++current_hopcount_;
+      return;
+   }
+   --forget_tp_counter_;
+}
 /****************************************/
 /****************************************/
 CFootBotAggregationOne::CFootBotAggregationOne() : wheels_(NULL),
@@ -65,7 +86,7 @@ CFootBotAggregationOne::CFootBotAggregationOne() : wheels_(NULL),
                                                    wheel_velocity_(2.5f),
                                                    delta_(0.5f),
                                                    alpha_(10.0f),
-                                                   hop_count_(false,500),
+                                                   hop_count_(false, 500,2000),
                                                    rotation_handler_(wheel_velocity_),
                                                    navigation_threshold_(
                                                        -argos::ToRadians(alpha_),
@@ -78,11 +99,12 @@ void CFootBotAggregationOne::Init(argos::TConfigurationNode &t_node)
    rnb_actuator_ = GetActuator<argos::CCI_RangeAndBearingActuator>("range_and_bearing");
    rnb_sensor_ = GetSensor<argos::CCI_RangeAndBearingSensor>("range_and_bearing");
 
-   argos::GetNodeAttributeOrDefault<argos::Real>(t_node, "velocity", wheel_velocity_, wheel_velocity_);
-   argos::GetNodeAttributeOrDefault<argos::Real>(t_node, "delta", delta_, delta_);
-   argos::GetNodeAttributeOrDefault<argos::CDegrees>(t_node, "alpha", alpha_, alpha_);
-   argos::GetNodeAttributeOrDefault<uint16_t>(t_node, "hopcountmax", hop_count_.hopcount_max_, hop_count_.hopcount_max_);
-   argos::GetNodeAttributeOrDefault<bool>(t_node, "forgettingallowed", hop_count_.forgetting_allowed_, hop_count_.forgetting_allowed_);
+   argos::GetNodeAttributeOrDefault<argos::Real>(t_node, "Velocity", wheel_velocity_, wheel_velocity_);
+   argos::GetNodeAttributeOrDefault<argos::Real>(t_node, "Delta", delta_, delta_);
+   argos::GetNodeAttributeOrDefault<argos::CDegrees>(t_node, "Alpha", alpha_, alpha_);
+   argos::GetNodeAttributeOrDefault<uint16_t>(t_node, "HopCountMax", hop_count_.hopcount_max_, hop_count_.hopcount_max_);
+   argos::GetNodeAttributeOrDefault<bool>(t_node, "ForgettingAllowed", hop_count_.forgetting_enabled_, hop_count_.forgetting_enabled_);
+   argos::GetNodeAttributeOrDefault<uint16_t>(t_node, "ForgettingTimePeriod", hop_count_.forgetting_tp_, hop_count_.forgetting_tp_);
 
    rotation_handler_ = CRotationHandler(wheel_velocity_);
    rotation_handler_.FindFramesNeeded(rng_angle_(rng_));
@@ -93,7 +115,8 @@ void CFootBotAggregationOne::Init(argos::TConfigurationNode &t_node)
    ___LOG("delta: ", delta_);
    ___LOG("alpha: ", alpha_);
    ___LOG("HCmax: ", hop_count_.hopcount_max_);
-   ___LOG("Forgetting?: ", hop_count_.forgetting_allowed_);
+   ___LOG("Forgetting?: ", hop_count_.forgetting_enabled_);
+   ___LOG("HCTP: ", hop_count_.forgetting_tp_);
 #endif
 }
 static inline argos::CVector2 FindAvg(const argos::CCI_FootBotProximitySensor::TReadings &readings)
@@ -122,20 +145,15 @@ void CFootBotAggregationOne::ControlStep()
       }
       return;
    }
-   // if target found
-   // if (0)
-   // {
-
-   //    return;
-   // }
+   // Avoid collisions
    const argos::CVector2 avg_prox_sen_angle = FindAvg(proximity_sen_->GetReadings());
    if (avg_prox_sen_angle.Length() > delta_)
    {
-      if(avg_prox_sen_angle.Angle().GetValue() > 0) 
+      if (avg_prox_sen_angle.Angle().GetValue() > 0)
       {
          wheels_->SetLinearVelocity(wheel_velocity_, 0);
       }
-      else 
+      else
       {
          wheels_->SetLinearVelocity(0, wheel_velocity_);
       }

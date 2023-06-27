@@ -97,11 +97,12 @@
       <!--  The default values are A= 7.5 D=0.1 V=5. Delta seems to be turing threshold.
             Alpha is "Angle tolerance range to go straight" (?written here in degrees?)-->>
       <params
-        alpha="10" 
-        delta="0.000001" 
-        velocity="5" 
-        hopcountmax="100"
-        forgettingallowed="0"
+        Velocity="5" 
+        Delta="0.000001" 
+        Alpha="10" 
+        HopCountMax="100"
+        ForgettingAllowed="0"
+        ForgettingTimePeriod="500"
       />  
     </footbot_aggregation_one>
 
