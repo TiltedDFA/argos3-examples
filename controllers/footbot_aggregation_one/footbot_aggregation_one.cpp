@@ -54,7 +54,7 @@ CFootBotAggregationOne::CFootBotAggregationOne():
                                                    forgetting_allowed_(false),
                                                    forgetting_time_period_(2000u),
                                                    rotation_handler_(wheel_velocity_),
-                                                   current_hopcount_(0u),
+                                                   current_hopcount_(hopcount_max_),
                                                    navigation_threshold_
                                                    (
                                                       -argos::ToRadians(alpha_),
@@ -76,6 +76,7 @@ void CFootBotAggregationOne::Init(argos::TConfigurationNode& t_node)
    argos::GetNodeAttributeOrDefault<uint16_t>(t_node, "forgettingtimeperiod", forgetting_time_period_, forgetting_time_period_);
    
    rotation_handler_ = CRotationHandler(wheel_velocity_);
+   rotation_handler_.FindFramesNeeded(rng_angle_(rng_));
    navigation_threshold_.Set(-argos::ToRadians(alpha_), argos::ToRadians(alpha_));
 
 #if __LOG_XML_DATA == 1
@@ -91,14 +92,28 @@ void CFootBotAggregationOne::Move()
 {
 
 }
+   //    if(cAngle.GetValue() > 0.0f) {
+   //       m_pcWheels->SetLinearVelocity(m_fWheelVelocity, 0.0f);
+   //    }
+   //    else {
+   //       m_pcWheels->SetLinearVelocity(0.0f, m_fWheelVelocity);
+   //    }
 void CFootBotAggregationOne::ControlStep() 
 {
+   //Turning
    if(rotation_handler_.rot_frames_remaining_ != 0)
    {
       if(rotation_handler_.rot_frames_remaining_ < 0)
       {
-
+         wheels_->SetLinearVelocity(-wheel_velocity_,wheel_velocity_);
+         rotation_handler_.ApproachZero();
       }
+      else
+      {
+         wheels_->SetLinearVelocity(wheel_velocity_,-wheel_velocity_);
+         rotation_handler_.ApproachZero();
+      }
+      return;
    }
   //if target found
   if(0)
