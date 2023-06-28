@@ -16,6 +16,7 @@
 #include <argos3/plugins/robots/generic/control_interface/ci_range_and_bearing_actuator.h>
 #include <argos3/plugins/robots/generic/control_interface/ci_range_and_bearing_sensor.h>
 #include <random>
+#include <string>
 /**
  * TODO
  * DISPLAY HOPCOUNTS ALONG WITH IDS IN SIM
@@ -56,6 +57,7 @@ public:
    virtual void ControlStep();
    virtual void Reset() {}
    virtual void Destroy() {}
+   std::string GetHC();
 public:
    //threadsafe random number gen
    inline static std::mt19937 rng_{std::random_device{}()};

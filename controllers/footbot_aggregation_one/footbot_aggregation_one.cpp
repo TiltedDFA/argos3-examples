@@ -66,6 +66,7 @@ void CHopCountManager::update()
    }
    if (currently_forgetting_)
    {
+      std::cout << "Currently forgetting " << std::endl;
       if (current_hopcount_ == hopcount_max_)
       {
          currently_forgetting_ = false;
@@ -186,9 +187,14 @@ void CFootBotAggregationOne::ControlStep()
    if(rnb_readings.size() > 0 && rnb_reading_min != rnb_readings.end())
    {
       std::cout << GetId() << "Rotating to small hc" << std::endl;
-      rotation_handler_.RotateTo(argos::ToDegrees(rnb_reading_min->HorizontalBearing).GetValue());
+      rotation_handler_.RotateTo(-argos::ToDegrees(rnb_reading_min->HorizontalBearing).GetValue());
+      return;
    }
    std::cout << GetId() << "Going straight" << std::endl;
    wheels_->SetLinearVelocity(wheel_velocity_, wheel_velocity_);
+}
+std::string CFootBotAggregationOne::GetHC()
+{
+   return std::to_string(hop_count_.current_hopcount_);
 }
 REGISTER_CONTROLLER(CFootBotAggregationOne, "footbot_aggregation_one")
