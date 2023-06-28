@@ -153,6 +153,7 @@ void CFootBotAggregationOne::ControlStep()
    // Turning
    if (rotation_handler_.rot_frames_remaining_ != 0)
    {
+      std::cout << GetId() << "Rotation manager reached" << std::endl;
       if (rotation_handler_.rot_frames_remaining_ < 0)
       {
          wheels_->SetLinearVelocity(-wheel_velocity_, wheel_velocity_);
@@ -169,6 +170,7 @@ void CFootBotAggregationOne::ControlStep()
    const argos::CVector2 avg_prox_sen_angle = FindAvg(proximity_sen_->GetReadings());
    if (avg_prox_sen_angle.Length() > delta_)
    {
+      std::cout << GetId() << "Collision avoidance reached" << std::endl;
       if (avg_prox_sen_angle.Angle().GetValue() > 0)
       {
          wheels_->SetLinearVelocity(wheel_velocity_, 0);
@@ -181,10 +183,12 @@ void CFootBotAggregationOne::ControlStep()
    }
    argos::CCI_RangeAndBearingSensor::TReadings rnb_readings = rnb_sensor_->GetReadings();
    const auto rnb_reading_min = FindMinSensorReading(rnb_readings,hop_count_.hopcount_max_);
-   if(rnb_reading_min != rnb_readings.end())
+   if(rnb_readings.size() > 0 && rnb_reading_min != rnb_readings.end())
    {
+      std::cout << GetId() << "Rotating to small hc" << std::endl;
       rotation_handler_.RotateTo(argos::ToDegrees(rnb_reading_min->HorizontalBearing).GetValue());
    }
+   std::cout << GetId() << "Going straight" << std::endl;
    wheels_->SetLinearVelocity(wheel_velocity_, wheel_velocity_);
 }
 REGISTER_CONTROLLER(CFootBotAggregationOne, "footbot_aggregation_one")
