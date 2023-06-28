@@ -88,11 +88,8 @@ CFootBotAggregationOne::CFootBotAggregationOne() : wheels_(NULL),
                                                    delta_(0.5f),
                                                    alpha_(10.0f),
                                                    hop_count_(false, 127,2000),
-                                                   rotation_handler_(wheel_velocity_),
-                                                   navigation_threshold_(
-                                                       -argos::ToRadians(alpha_),
-                                                       argos::ToRadians(alpha_)) {}
-
+                                                   rotation_handler_(wheel_velocity_)
+{}
 void CFootBotAggregationOne::Init(argos::TConfigurationNode &t_node)
 {
    wheels_ = GetActuator<argos::CCI_DifferentialSteeringActuator>("differential_steering");
@@ -109,7 +106,6 @@ void CFootBotAggregationOne::Init(argos::TConfigurationNode &t_node)
 
    rotation_handler_ = CRotationHandler(wheel_velocity_);
    rotation_handler_.RotateTo(rng_angle_(rng_));
-   navigation_threshold_.Set(-argos::ToRadians(alpha_), argos::ToRadians(alpha_));
 
 #if __LOG_XML_DATA == 1
    ___LOG("velocity: ", wheel_velocity_);
@@ -184,13 +180,18 @@ void CFootBotAggregationOne::ControlStep()
    }
    argos::CCI_RangeAndBearingSensor::TReadings rnb_readings = rnb_sensor_->GetReadings();
    const std::vector<argos::CCI_RangeAndBearingSensor::SPacket>::iterator rnb_reading_min = FindMinSensorReading(rnb_readings,hop_count_.hopcount_max_);
+   //The go straight angle now works, however for some reason it still tries to navigate to each other when they have the same hop count
    if(rnb_readings.size() > 0 && rnb_reading_min != rnb_readings.end())
    {
       std::cout << GetId() << "Rotating to small hc" << std::endl;
-      const argos::CRadians angle_to_smallest_hc = rnb_reading_min->HorizontalBearing;
-      if(!navigation_threshold_.WithinMinBoundIncludedMaxBoundIncluded(angle_to_smallest_hc))
-         rotation_handler_.RotateTo(-argos::ToDegrees(angle_to_smallest_hc).GetValue());
-      return;
+      const argos::Real angle_to_smallest_hc = -argos::ToDegrees(rnb_reading_min->HorizontalBearing).GetValue();
+
+      if(!(std::abs(angle_to_smallest_hc) < alpha_.GetAbsoluteValue()))
+      {
+         rotation_handler_.RotateTo(angle_to_smallest_hc);
+         return;
+      }
+      
    }
    std::cout << GetId() << "Going straight" << std::endl;
    wheels_->SetLinearVelocity(wheel_velocity_, wheel_velocity_);

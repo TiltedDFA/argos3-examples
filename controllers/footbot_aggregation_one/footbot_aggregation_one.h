@@ -79,7 +79,6 @@ private:
    //Other internal variables
    CHopCountManager hop_count_;
    CRotationHandler rotation_handler_;
-   argos::CRange<argos::CRadians> navigation_threshold_;
 };
 
 #endif
