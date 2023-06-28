@@ -47,7 +47,7 @@ void CRotationHandler::ApproachZero()
 }
 /****************************************/
 /****************************************/
-CHopCountManager::CHopCountManager(bool forgetting_allowed, uint16_t hopcount_max, uint16_t forgetting_tp)
+CHopCountManager::CHopCountManager(bool forgetting_allowed, uint8_t hopcount_max, uint16_t forgetting_tp)
     : forgetting_enabled_(forgetting_allowed),
       forgetting_tp_(forgetting_tp),
       hopcount_max_(hopcount_max),
@@ -87,7 +87,7 @@ CFootBotAggregationOne::CFootBotAggregationOne() : wheels_(NULL),
                                                    wheel_velocity_(2.5f),
                                                    delta_(0.5f),
                                                    alpha_(10.0f),
-                                                   hop_count_(false, 500,2000),
+                                                   hop_count_(false, 127,2000),
                                                    rotation_handler_(wheel_velocity_),
                                                    navigation_threshold_(
                                                        -argos::ToRadians(alpha_),
@@ -103,7 +103,7 @@ void CFootBotAggregationOne::Init(argos::TConfigurationNode &t_node)
    argos::GetNodeAttributeOrDefault<argos::Real>(t_node, "Velocity", wheel_velocity_, wheel_velocity_);
    argos::GetNodeAttributeOrDefault<argos::Real>(t_node, "Delta", delta_, delta_);
    argos::GetNodeAttributeOrDefault<argos::CDegrees>(t_node, "Alpha", alpha_, alpha_);
-   argos::GetNodeAttributeOrDefault<uint16_t>(t_node, "HopCountMax", hop_count_.hopcount_max_, hop_count_.hopcount_max_);
+   argos::GetNodeAttributeOrDefault<uint8_t>(t_node, "HopCountMax", hop_count_.hopcount_max_, hop_count_.hopcount_max_);
    argos::GetNodeAttributeOrDefault<bool>(t_node, "ForgettingAllowed", hop_count_.forgetting_enabled_, hop_count_.forgetting_enabled_);
    argos::GetNodeAttributeOrDefault<uint16_t>(t_node, "ForgettingTimePeriod", hop_count_.forgetting_tp_, hop_count_.forgetting_tp_);
 
@@ -183,11 +183,13 @@ void CFootBotAggregationOne::ControlStep()
       return;
    }
    argos::CCI_RangeAndBearingSensor::TReadings rnb_readings = rnb_sensor_->GetReadings();
-   const auto rnb_reading_min = FindMinSensorReading(rnb_readings,hop_count_.hopcount_max_);
+   const std::vector<argos::CCI_RangeAndBearingSensor::SPacket>::iterator rnb_reading_min = FindMinSensorReading(rnb_readings,hop_count_.hopcount_max_);
    if(rnb_readings.size() > 0 && rnb_reading_min != rnb_readings.end())
    {
       std::cout << GetId() << "Rotating to small hc" << std::endl;
-      rotation_handler_.RotateTo(-argos::ToDegrees(rnb_reading_min->HorizontalBearing).GetValue());
+      const argos::CRadians angle_to_smallest_hc = rnb_reading_min->HorizontalBearing;
+      if(!navigation_threshold_.WithinMinBoundIncludedMaxBoundIncluded(angle_to_smallest_hc))
+         rotation_handler_.RotateTo(-argos::ToDegrees(angle_to_smallest_hc).GetValue());
       return;
    }
    std::cout << GetId() << "Going straight" << std::endl;
