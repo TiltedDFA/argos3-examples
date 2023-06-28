@@ -1,48 +1,19 @@
-/*
- * This example shows how to define custom distributions to place the robots.
- */
+#ifndef AGGREGATION_LOOP_FUNCTION_H
+#define AGGREGATION_LOOP_FUNCTION_H
+#include <argos3/plugins/simulator/visualizations/qt-opengl/qtopengl_user_functions.h>
+#include <argos3/plugins/robots/foot-bot/simulator/footbot_entity.h>
 
-#include <argos3/core/simulator/loop_functions.h>
+using namespace argos;
 
-using argos::CARGoSException;
-
-class CAggregationLoopFunctions : public argos::CLoopFunctions 
-{
+class CIDQTUserFunctions : public CQTOpenGLUserFunctions {
 
 public:
 
-   CAggregationLoopFunctions();
-   virtual ~CAggregationLoopFunctions();
+   CIDQTUserFunctions();
 
-   virtual void Init(argos::TConfigurationNode& t_tree);
+   virtual ~CIDQTUserFunctions() {}
 
-private:
-
-   /*
-    *
-    */
-   void PlaceLine(const argos::CVector2& c_center,
-                  argos::UInt32 un_robots,
-                  argos::Real f_distance,
-                  argos::UInt32 un_id_start);
-
-   void PlaceCluster(const argos::CVector2& c_center,
-                     argos::UInt32 un_robots,
-                     argos::Real f_density,
-                     argos::UInt32 un_id_start);
-
-   void PlaceScaleFree(const argos::CVector2& c_center,
-                       argos::UInt32 un_robots,
-                       argos::Real f_range,
-                       argos::UInt32 un_id_start);
+   void Draw(CFootBotEntity& c_entity);
    
-private:
-
-   enum ETopology {
-      TOPOLOGY_LINE,
-      TOPOLOGY_CLUSTER,
-      TOPOLOGY_SCALEFREE
-   };
-
 };
-
+#endif // #ifndef AGGREGATION_LOOP_FUNCTION_H
