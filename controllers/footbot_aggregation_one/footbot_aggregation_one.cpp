@@ -103,7 +103,7 @@ void CFootBotAggregationOne::Init(argos::TConfigurationNode &t_node)
    argos::GetNodeAttributeOrDefault<uint8_t>(t_node, "HopCountMax", hop_count_.hopcount_max_, hop_count_.hopcount_max_);
    argos::GetNodeAttributeOrDefault<bool>(t_node, "ForgettingAllowed", hop_count_.forgetting_enabled_, hop_count_.forgetting_enabled_);
    argos::GetNodeAttributeOrDefault<uint16_t>(t_node, "ForgettingTimePeriod", hop_count_.forgetting_tp_, hop_count_.forgetting_tp_);
-
+   hop_count_.current_hopcount_ = hop_count_.hopcount_max_;
    rotation_handler_ = CRotationHandler(wheel_velocity_);
    rotation_handler_.RotateTo(rng_angle_(rng_));
 
