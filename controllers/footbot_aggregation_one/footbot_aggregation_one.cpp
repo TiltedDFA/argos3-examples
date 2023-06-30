@@ -6,6 +6,7 @@
 #define __LOG_XML_DATA 1
 #define __LOG_PROX_DATA 0
 #define __LOG_FORGETTING 1
+#define __LOG_LOWEST_DATA_RNB 1
 /****************************************/
 /****************************************/
 CRotationHandler::CRotationHandler(argos::Real robo_wheel_vel)
@@ -47,12 +48,12 @@ void CRotationHandler::ApproachZero()
 }
 /****************************************/
 /****************************************/
-CHopCountManager::CHopCountManager(bool forgetting_allowed, uint8_t hopcount_max, uint16_t forgetting_tp)
+CHopCountManager::CHopCountManager(bool forgetting_allowed, uint16_t hopcount_max, uint16_t forgetting_tp)
     : forgetting_enabled_(forgetting_allowed),
       forgetting_tp_(forgetting_tp),
-      hopcount_max_(hopcount_max),
+      hop_count_max_(hopcount_max),
       forget_tp_counter_(0),
-      current_hopcount_(hopcount_max),
+      current_hop_count_(hopcount_max),
       currently_forgetting_(false)
 {}
 void CHopCountManager::update()
@@ -67,13 +68,13 @@ void CHopCountManager::update()
    if (currently_forgetting_)
    {
       std::cout << "Currently forgetting " << std::endl;
-      if (current_hopcount_ == hopcount_max_)
+      if (current_hop_count_ == hop_count_max_)
       {
          currently_forgetting_ = false;
          forget_tp_counter_ = forgetting_tp_;
          return;
       }
-      ++current_hopcount_;
+      ++current_hop_count_;
       return;
    }
    --forget_tp_counter_;
@@ -87,23 +88,24 @@ CFootBotAggregationOne::CFootBotAggregationOne() : wheels_(NULL),
                                                    wheel_velocity_(2.5f),
                                                    delta_(0.5f),
                                                    alpha_(10.0f),
-                                                   hop_count_(false, 127,2000),
+                                                   hop_count_(CHopCountManager(0,50,200)),
                                                    rotation_handler_(wheel_velocity_)
 {}
 void CFootBotAggregationOne::Init(argos::TConfigurationNode &t_node)
 {
-   wheels_ = GetActuator<argos::CCI_DifferentialSteeringActuator>("differential_steering");
+   wheels_        = GetActuator<argos::CCI_DifferentialSteeringActuator>("differential_steering");
    proximity_sen_ = GetSensor<argos::CCI_FootBotProximitySensor>("footbot_proximity");
-   rnb_actuator_ = GetActuator<argos::CCI_RangeAndBearingActuator>("range_and_bearing");
-   rnb_sensor_ = GetSensor<argos::CCI_RangeAndBearingSensor>("range_and_bearing");
+   rnb_actuator_  = GetActuator<argos::CCI_RangeAndBearingActuator>("range_and_bearing");
+   rnb_sensor_    = GetSensor<argos::CCI_RangeAndBearingSensor>("range_and_bearing");
 
    argos::GetNodeAttributeOrDefault<argos::Real>(t_node, "Velocity", wheel_velocity_, wheel_velocity_);
    argos::GetNodeAttributeOrDefault<argos::Real>(t_node, "Delta", delta_, delta_);
    argos::GetNodeAttributeOrDefault<argos::CDegrees>(t_node, "Alpha", alpha_, alpha_);
-   argos::GetNodeAttributeOrDefault<uint8_t>(t_node, "HopCountMax", hop_count_.hopcount_max_, hop_count_.hopcount_max_);
+   argos::GetNodeAttributeOrDefault<uint16_t>(t_node, "HopCountMax", hop_count_.hop_count_max_, hop_count_.hop_count_max_);
    argos::GetNodeAttributeOrDefault<bool>(t_node, "ForgettingAllowed", hop_count_.forgetting_enabled_, hop_count_.forgetting_enabled_);
    argos::GetNodeAttributeOrDefault<uint16_t>(t_node, "ForgettingTimePeriod", hop_count_.forgetting_tp_, hop_count_.forgetting_tp_);
-   hop_count_.current_hopcount_ = hop_count_.hopcount_max_;
+   
+   hop_count_.current_hop_count_ = hop_count_.hop_count_max_;
    rotation_handler_ = CRotationHandler(wheel_velocity_);
    rotation_handler_.RotateTo(rng_angle_(rng_));
 
@@ -111,7 +113,8 @@ void CFootBotAggregationOne::Init(argos::TConfigurationNode &t_node)
    ___LOG("velocity: ", wheel_velocity_);
    ___LOG("delta: ", delta_);
    ___LOG("alpha: ", alpha_);
-   ___LOG("HCmax: ", hop_count_.hopcount_max_);
+   ___LOG("HCmax: ", hop_count_.hop_count_max_);
+   ___LOG("CurrentHC: ", hop_count_.current_hop_count_);
    ___LOG("Forgetting?: ", hop_count_.forgetting_enabled_);
    ___LOG("HCTP: ", hop_count_.forgetting_tp_);
 #endif
@@ -146,7 +149,7 @@ static inline std::vector<argos::CCI_RangeAndBearingSensor::SPacket>::iterator F
 void CFootBotAggregationOne::ControlStep()
 {
    rnb_actuator_->ClearData();
-   rnb_actuator_->SetData(0,hop_count_.current_hopcount_);
+   rnb_actuator_->SetData(0,hop_count_.current_hop_count_);
    // Turning
    if (rotation_handler_.rot_frames_remaining_ != 0)
    {
@@ -179,7 +182,7 @@ void CFootBotAggregationOne::ControlStep()
       return;
    }
    argos::CCI_RangeAndBearingSensor::TReadings rnb_readings = rnb_sensor_->GetReadings();
-   const std::vector<argos::CCI_RangeAndBearingSensor::SPacket>::iterator rnb_reading_min = FindMinSensorReading(rnb_readings,hop_count_.hopcount_max_);
+   const std::vector<argos::CCI_RangeAndBearingSensor::SPacket>::iterator rnb_reading_min = FindMinSensorReading(rnb_readings,hop_count_.hop_count_max_);
    //The go straight angle now works, however for some reason it still tries to navigate to each other when they have the same hop count
    if(rnb_readings.size() > 0 && rnb_reading_min != rnb_readings.end())
    {
@@ -198,6 +201,6 @@ void CFootBotAggregationOne::ControlStep()
 }
 std::string CFootBotAggregationOne::GetHC()
 {
-   return std::to_string(hop_count_.current_hopcount_);
+   return std::to_string(hop_count_.current_hop_count_);
 }
 REGISTER_CONTROLLER(CFootBotAggregationOne, "footbot_aggregation_one")

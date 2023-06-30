@@ -29,7 +29,7 @@
         Velocity="5" 
         Delta="0.000001" 
         Alpha="10" 
-        HopCountMax="100"
+        HopCountMax="50"
         ForgettingAllowed="0"
         ForgettingTimePeriod="500"
       />  

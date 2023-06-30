@@ -39,14 +39,14 @@ struct CRotationHandler
 struct CHopCountManager 
 {
    CHopCountManager()=delete;
-   CHopCountManager(bool forgetting_enabled,uint8_t hopcount_max_,uint16_t forgetting_tp);
+   CHopCountManager(bool forgetting_enabled,uint16_t hop_count_max,uint16_t forgetting_tp);
    void update();
 
    bool forgetting_enabled_;
    uint16_t forgetting_tp_;
-   uint8_t hopcount_max_;
+   uint16_t hop_count_max_;
    uint16_t forget_tp_counter_;
-   uint8_t current_hopcount_;
+   uint16_t current_hop_count_;
    bool currently_forgetting_;
 };
 class CFootBotAggregationOne : public argos::CCI_Controller 
