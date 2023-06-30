@@ -24,12 +24,13 @@
       <sensors>
         <footbot_proximity implementation="default" show_rays="true" />
         <range_and_bearing implementation="medium" medium="rab" show_rays="true"/>
+        <footbot_motor_ground implementation="rot_z_only" />
       </sensors>
      <params
         Velocity="5" 
         Delta="0.000001" 
         Alpha="10" 
-        HopCountMax="50"
+        HopCountMax="99"
         ForgettingAllowed="0"
         ForgettingTimePeriod="500"
       />  
@@ -40,7 +41,7 @@
   <!-- *********************** -->
   <!-- * Arena configuration * -->
   <!-- *********************** -->
-  <arena size="3, 3, 1" center="0,0,0.5">
+  <arena size="2, 2, 1" center="0,0,0.5">
 
     <!-- Place four boxes in a square to delimit the arena -->
     <box id="wall_north" size="2,0.1,0.5" movable="false">
@@ -66,6 +67,12 @@
         </foot-bot>
       </entity>
     </distribute>
+    
+    <floor 
+        id="floor"
+        source="image"
+        path="experiments/images/TopLeft.png" 
+    />
 
   </arena>
 

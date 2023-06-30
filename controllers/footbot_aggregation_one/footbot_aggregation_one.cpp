@@ -3,10 +3,12 @@
 #include <argos3/core/utility/math/vector2.h>
 
 #define ___LOG(comment, data) std::cout << (comment) << (data) << std::endl
-#define __LOG_XML_DATA 1
+#define __LOG_XML_DATA 0
 #define __LOG_PROX_DATA 0
-#define __LOG_FORGETTING 1
-#define __LOG_LOWEST_DATA_RNB 1
+#define __LOG_FORGETTING 0
+#define __LOG_LOWEST_DATA_RNB 0
+#define __LOG_GROUND_SEN 1
+#define __LOG_OVER_TRGT_AREA 1
 /****************************************/
 /****************************************/
 CRotationHandler::CRotationHandler(argos::Real robo_wheel_vel)
@@ -93,10 +95,11 @@ CFootBotAggregationOne::CFootBotAggregationOne() : wheels_(NULL),
 {}
 void CFootBotAggregationOne::Init(argos::TConfigurationNode &t_node)
 {
-   wheels_        = GetActuator<argos::CCI_DifferentialSteeringActuator>("differential_steering");
-   proximity_sen_ = GetSensor<argos::CCI_FootBotProximitySensor>("footbot_proximity");
-   rnb_actuator_  = GetActuator<argos::CCI_RangeAndBearingActuator>("range_and_bearing");
-   rnb_sensor_    = GetSensor<argos::CCI_RangeAndBearingSensor>("range_and_bearing");
+   wheels_        = GetActuator< argos::CCI_DifferentialSteeringActuator>("differential_steering");
+   proximity_sen_ = GetSensor<   argos::CCI_FootBotProximitySensor      >("footbot_proximity");
+   rnb_actuator_  = GetActuator< argos::CCI_RangeAndBearingActuator     >("range_and_bearing");
+   rnb_sensor_    = GetSensor<   argos::CCI_RangeAndBearingSensor       >("range_and_bearing");
+   ground_sensor_ = GetSensor<   argos::CCI_FootBotMotorGroundSensor    >("footbot_motor_ground" );
 
    argos::GetNodeAttributeOrDefault<argos::Real>(t_node, "Velocity", wheel_velocity_, wheel_velocity_);
    argos::GetNodeAttributeOrDefault<argos::Real>(t_node, "Delta", delta_, delta_);
@@ -119,6 +122,7 @@ void CFootBotAggregationOne::Init(argos::TConfigurationNode &t_node)
    ___LOG("HCTP: ", hop_count_.forgetting_tp_);
 #endif
 }
+//for the proximity sensor
 static inline argos::CVector2 FindAvg(const argos::CCI_FootBotProximitySensor::TReadings &readings)
 {
    argos::CVector2 cAccumulator;
@@ -128,6 +132,7 @@ static inline argos::CVector2 FindAvg(const argos::CCI_FootBotProximitySensor::T
    }
    return (cAccumulator / readings.size());
 }
+//for the RNB sensor
 static inline std::vector<argos::CCI_RangeAndBearingSensor::SPacket>::iterator FindMinSensorReading(argos::CCI_RangeAndBearingSensor::TReadings& rnb_readings, uint16_t hop_count_max)
 {
    auto min_hc = hop_count_max;
@@ -146,6 +151,14 @@ static inline std::vector<argos::CCI_RangeAndBearingSensor::SPacket>::iterator F
    }
    return rnb_readings.begin() + min_index;
 }
+//For the motor sensor
+static inline bool IsOverTargetArea(const argos::CCI_FootBotMotorGroundSensor::TReadings& readings)
+{
+   return   readings[0].Value < 0.1 || 
+            readings[1].Value < 0.1 || 
+            readings[2].Value < 0.1 || 
+            readings[3].Value < 0.1;
+}
 void CFootBotAggregationOne::ControlStep()
 {
    rnb_actuator_->ClearData();
@@ -153,7 +166,7 @@ void CFootBotAggregationOne::ControlStep()
    // Turning
    if (rotation_handler_.rot_frames_remaining_ != 0)
    {
-      std::cout << GetId() << "Rotation manager reached" << std::endl;
+      //std::cout << GetId() << "Rotation manager reached" << std::endl;
       if (rotation_handler_.rot_frames_remaining_ < 0)
       {
          wheels_->SetLinearVelocity(-wheel_velocity_, wheel_velocity_);
@@ -170,7 +183,7 @@ void CFootBotAggregationOne::ControlStep()
    const argos::CVector2 avg_prox_sen_angle = FindAvg(proximity_sen_->GetReadings());
    if (avg_prox_sen_angle.Length() > delta_)
    {
-      std::cout << GetId() << "Collision avoidance reached" << std::endl;
+      //std::cout << GetId() << "Collision avoidance reached" << std::endl;
       if (avg_prox_sen_angle.Angle().GetValue() > 0)
       {
          wheels_->SetLinearVelocity(wheel_velocity_, 0);
@@ -181,12 +194,41 @@ void CFootBotAggregationOne::ControlStep()
       }
       return;
    }
+/* This sensor provides access to the motor sensors. The readings are in the following
+ * order (seeing the robot from TOP, battery socket is the BACK):
+ *
+ *       front
+ *
+ * l|w          r|w
+ * e|h   1  0   i|h
+ * f|e          g|e
+ * t|e   2  3   h|e
+ *  |l          t|l
+ *
+ */
+   const argos::CCI_FootBotMotorGroundSensor::TReadings& gnd_sen_readings = ground_sensor_->GetReadings();
+#if __LOG_GROUND_SEN == 1
+   std::cout << 
+      "Value of sen0: " << gnd_sen_readings[0].Value <<
+      "Value of sen1: " << gnd_sen_readings[1].Value <<
+      "Value of sen2: " << gnd_sen_readings[2].Value <<
+      "Value of sen3: " << gnd_sen_readings[3].Value <<
+   std::endl;
+#endif
+   if(IsOverTargetArea(gnd_sen_readings))
+   {
+#if __LOG_OVER_TRGT_AREA == 1
+      std::cout << GetId() << " is over target area" << std::endl;
+#endif
+   }
+
+
    argos::CCI_RangeAndBearingSensor::TReadings rnb_readings = rnb_sensor_->GetReadings();
    const std::vector<argos::CCI_RangeAndBearingSensor::SPacket>::iterator rnb_reading_min = FindMinSensorReading(rnb_readings,hop_count_.hop_count_max_);
    //The go straight angle now works, however for some reason it still tries to navigate to each other when they have the same hop count
    if(rnb_readings.size() > 0 && rnb_reading_min != rnb_readings.end())
    {
-      std::cout << GetId() << "Rotating to small hc" << std::endl;
+     // std::cout << GetId() << "Rotating to small hc" << std::endl;
       const argos::Real angle_to_smallest_hc = -argos::ToDegrees(rnb_reading_min->HorizontalBearing).GetValue();
 
       if(!(std::abs(angle_to_smallest_hc) < alpha_.GetAbsoluteValue()))
@@ -196,7 +238,7 @@ void CFootBotAggregationOne::ControlStep()
       }
       
    }
-   std::cout << GetId() << "Going straight" << std::endl;
+  // std::cout << GetId() << "Going straight" << std::endl;
    wheels_->SetLinearVelocity(wheel_velocity_, wheel_velocity_);
 }
 std::string CFootBotAggregationOne::GetHC()

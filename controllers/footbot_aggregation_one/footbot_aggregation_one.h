@@ -15,6 +15,7 @@
 #include <argos3/plugins/robots/foot-bot/control_interface/ci_footbot_proximity_sensor.h>
 #include <argos3/plugins/robots/generic/control_interface/ci_range_and_bearing_actuator.h>
 #include <argos3/plugins/robots/generic/control_interface/ci_range_and_bearing_sensor.h>
+#include <argos3/plugins/robots/foot-bot/control_interface/ci_footbot_motor_ground_sensor.h>
 #include <random>
 #include <string>
 /**
@@ -69,6 +70,7 @@ private:
    argos::CCI_FootBotProximitySensor* proximity_sen_;
    argos::CCI_RangeAndBearingActuator* rnb_actuator_;
    argos::CCI_RangeAndBearingSensor* rnb_sensor_;
+   argos::CCI_FootBotMotorGroundSensor* ground_sensor_;
 
    //The group below is to be read from the XML 
    argos::Real wheel_velocity_;
