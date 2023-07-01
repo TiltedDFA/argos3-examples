@@ -3,12 +3,12 @@
 #include <argos3/core/utility/math/vector2.h>
 
 #define ___LOG(comment, data) std::cout << (comment) << (data) << std::endl
-#define __LOG_XML_DATA 0
+#define __LOG_XML_DATA 1
 #define __LOG_PROX_DATA 0
-#define __LOG_FORGETTING 0
+#define __LOG_FORGETTING 1
 #define __LOG_LOWEST_DATA_RNB 0
-#define __LOG_GROUND_SEN 1
-#define __LOG_OVER_TRGT_AREA 1
+#define __LOG_GROUND_SEN 0
+#define __LOG_OVER_TRGT_AREA 0
 /****************************************/
 /****************************************/
 CRotationHandler::CRotationHandler(argos::Real robo_wheel_vel)
@@ -48,6 +48,13 @@ void CRotationHandler::ApproachZero()
    }
    --rot_frames_remaining_;
 }
+void CRotationHandler::NonZeroRotateTo(argos::Real desired_turning_angle)
+{
+   if(rot_frames_remaining_ != 0)
+   {
+      RotateTo(desired_turning_angle);
+   }
+}
 /****************************************/
 /****************************************/
 CHopCountManager::CHopCountManager(bool forgetting_allowed, uint16_t hopcount_max, uint16_t forgetting_tp)
@@ -58,14 +65,19 @@ CHopCountManager::CHopCountManager(bool forgetting_allowed, uint16_t hopcount_ma
       current_hop_count_(hopcount_max),
       currently_forgetting_(false)
 {}
-void CHopCountManager::update()
+bool CHopCountManager::update()
 {
-   if (!forgetting_enabled_)return;
    
+   if (!forgetting_enabled_)
+   {
+      std::cout << "Forgetting skipped" << std::endl;
+      return false;
+   }
    if (!currently_forgetting_ && forget_tp_counter_ == 0)
    {
+      std::cout << "Activated forgetting " << std::endl;
       currently_forgetting_ = true;
-      return;
+      return true;
    }
    if (currently_forgetting_)
    {
@@ -74,12 +86,14 @@ void CHopCountManager::update()
       {
          currently_forgetting_ = false;
          forget_tp_counter_ = forgetting_tp_;
-         return;
+         return false;
       }
       ++current_hop_count_;
-      return;
+      return true;
    }
    --forget_tp_counter_;
+   std::cout << "--TPC: " << forget_tp_counter_ << std::endl;
+   return false;
 }
 /****************************************/
 /****************************************/
@@ -220,8 +234,15 @@ void CFootBotAggregationOne::ControlStep()
 #if __LOG_OVER_TRGT_AREA == 1
       std::cout << GetId() << " is over target area" << std::endl;
 #endif
+      hop_count_.current_hop_count_ = 0;
+      rotation_handler_.NonZeroRotateTo(rng_angle_(rng_));
+      return;
    }
-
+   if(hop_count_.update())
+   {
+      rotation_handler_.NonZeroRotateTo(rng_angle_(rng_));
+      return;
+   }
 
    argos::CCI_RangeAndBearingSensor::TReadings rnb_readings = rnb_sensor_->GetReadings();
    const std::vector<argos::CCI_RangeAndBearingSensor::SPacket>::iterator rnb_reading_min = FindMinSensorReading(rnb_readings,hop_count_.hop_count_max_);
@@ -234,6 +255,7 @@ void CFootBotAggregationOne::ControlStep()
       if(!(std::abs(angle_to_smallest_hc) < alpha_.GetAbsoluteValue()))
       {
          rotation_handler_.RotateTo(angle_to_smallest_hc);
+         hop_count_.current_hop_count_ = (rnb_reading_min->Data[0] + 1);
          return;
       }
       

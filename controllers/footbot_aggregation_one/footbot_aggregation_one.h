@@ -32,6 +32,9 @@ struct CRotationHandler
    void FindTimeNeededFor180(argos::Real robo_wheel_vel);
    void RotateTo(argos::Real desired_turning_angle);
    void ApproachZero();
+   //This function will only allow rotation to be registered 
+   //if it not currently rotation already
+   void NonZeroRotateTo(argos::Real desired_turning_angle);
    
    int8_t rot_frames_remaining_;
    uint8_t time_needed_180_;
@@ -41,7 +44,9 @@ struct CHopCountManager
 {
    CHopCountManager()=delete;
    CHopCountManager(bool forgetting_enabled,uint16_t hop_count_max,uint16_t forgetting_tp);
-   void update();
+   //Will return true if it is currently forgetting,
+   //it will return false otherwise
+   bool update();
 
    bool forgetting_enabled_;
    uint16_t forgetting_tp_;
