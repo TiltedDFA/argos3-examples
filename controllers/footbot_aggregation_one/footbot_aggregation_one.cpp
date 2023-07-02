@@ -67,7 +67,6 @@ CHopCountManager::CHopCountManager(bool forgetting_allowed, uint16_t hopcount_ma
 {}
 bool CHopCountManager::update()
 {
-   
    if (!forgetting_enabled_)
    {
       std::cout << "Forgetting skipped" << std::endl;
@@ -84,6 +83,7 @@ bool CHopCountManager::update()
       std::cout << "Currently forgetting " << std::endl;
       if (current_hop_count_ == hop_count_max_)
       {
+         std::cout << "Deactivated forgetting " << std::endl;
          currently_forgetting_ = false;
          forget_tp_counter_ = forgetting_tp_;
          return false;
@@ -92,7 +92,6 @@ bool CHopCountManager::update()
       return true;
    }
    --forget_tp_counter_;
-   std::cout << "--TPC: " << forget_tp_counter_ << std::endl;
    return false;
 }
 /****************************************/
@@ -115,16 +114,16 @@ void CFootBotAggregationOne::Init(argos::TConfigurationNode &t_node)
    rnb_sensor_    = GetSensor<   argos::CCI_RangeAndBearingSensor       >("range_and_bearing");
    ground_sensor_ = GetSensor<   argos::CCI_FootBotMotorGroundSensor    >("footbot_motor_ground" );
 
-   argos::GetNodeAttributeOrDefault<argos::Real>(t_node, "Velocity", wheel_velocity_, wheel_velocity_);
-   argos::GetNodeAttributeOrDefault<argos::Real>(t_node, "Delta", delta_, delta_);
-   argos::GetNodeAttributeOrDefault<argos::CDegrees>(t_node, "Alpha", alpha_, alpha_);
-   argos::GetNodeAttributeOrDefault<uint16_t>(t_node, "HopCountMax", hop_count_.hop_count_max_, hop_count_.hop_count_max_);
-   argos::GetNodeAttributeOrDefault<bool>(t_node, "ForgettingAllowed", hop_count_.forgetting_enabled_, hop_count_.forgetting_enabled_);
-   argos::GetNodeAttributeOrDefault<uint16_t>(t_node, "ForgettingTimePeriod", hop_count_.forgetting_tp_, hop_count_.forgetting_tp_);
+   argos::GetNodeAttributeOrDefault(t_node, "Velocity", wheel_velocity_, wheel_velocity_);
+   argos::GetNodeAttributeOrDefault(t_node, "Delta", delta_, delta_);
+   argos::GetNodeAttributeOrDefault(t_node, "Alpha", alpha_, alpha_);
+   argos::GetNodeAttributeOrDefault(t_node, "HopCountMax", hop_count_.hop_count_max_, hop_count_.hop_count_max_);
+   argos::GetNodeAttributeOrDefault(t_node, "ForgettingAllowed", hop_count_.forgetting_enabled_, hop_count_.forgetting_enabled_);
+   argos::GetNodeAttributeOrDefault(t_node, "ForgettingTimePeriod", hop_count_.forgetting_tp_, hop_count_.forgetting_tp_);
    
    hop_count_.current_hop_count_ = hop_count_.hop_count_max_;
-   rotation_handler_ = CRotationHandler(wheel_velocity_);
-   rotation_handler_.RotateTo(rng_angle_(rng_));
+   rotation_handler_ = std::move(CRotationHandler(wheel_velocity_));
+
 
 #if __LOG_XML_DATA == 1
    ___LOG("velocity: ", wheel_velocity_);
@@ -207,6 +206,13 @@ void CFootBotAggregationOne::ControlStep()
       }
       return;
    }
+   //-------------------Handleing Hop Count & Forgetting--------------------------------//
+   if(hop_count_.update())
+   {
+      rotation_handler_.NonZeroRotateTo(rng_angle_(rng_));
+      //rotation_handler_.RotateTo(rng_angle_(rng_));
+      return;
+   }
    //------------------Check if a target area has been reached-----------------//
    const argos::CCI_FootBotMotorGroundSensor::TReadings& gnd_sen_readings = ground_sensor_->GetReadings();
 #if __LOG_GROUND_SEN == 1
@@ -223,11 +229,6 @@ void CFootBotAggregationOne::ControlStep()
       std::cout << GetId() << " is over target area" << std::endl;
 #endif
       hop_count_.current_hop_count_ = 0;
-      rotation_handler_.NonZeroRotateTo(rng_angle_(rng_));
-      return;
-   }
-   if(hop_count_.update())
-   {
       rotation_handler_.NonZeroRotateTo(rng_angle_(rng_));
       return;
    }

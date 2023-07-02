@@ -19,14 +19,14 @@ void CAggergationUserFunction::Draw(CFootBotEntity& c_entity) {
    argos::CCI_Controller& controller = c_entity.GetControllableEntity().GetController();
    DrawText(CVector3(0.0, -0.05, 0.3),   // position
             c_entity.GetId().c_str(),
-            CColor::WHITE); // text
+            CColor::RED); // text
 
    DrawText(CVector3(0.0, 0.05, 0.3),   // position
             //dynamic_cast<CFootBotAggregationOne&>(c_entity) CFootBotAggregationOne is controller
             dynamic_cast<CFootBotAggregationOne&>(controller)
                   .GetHC()
                   .c_str(),
-            CColor::WHITE); // text
+            CColor::RED); // text
 }
 
 /****************************************/
