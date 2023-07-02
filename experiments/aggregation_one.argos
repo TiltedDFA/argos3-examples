@@ -22,13 +22,13 @@
         <range_and_bearing implementation="default" />
       </actuators>
       <sensors>
-        <footbot_proximity implementation="default" show_rays="true" />
+        <footbot_proximity implementation="default" show_rays="false" />
         <range_and_bearing implementation="medium" medium="rab" show_rays="true"/>
         <footbot_motor_ground implementation="rot_z_only" />
       </sensors>
      <params
         Velocity="5" 
-        Delta="0.000001" 
+        Delta="0.1" 
         Alpha="10" 
         HopCountMax="99"
         ForgettingAllowed="1"
@@ -61,7 +61,7 @@
     <distribute>
       <position method="uniform" min="-4,-4,0" max="4,4,0" />
       <orientation method="uniform" min="0,0,0" max="360,0,0" />
-      <entity quantity="100" max_trials="100">
+      <entity quantity="2" max_trials="100">
         <foot-bot id="fb">
           <controller config="fao" />
         </foot-bot>

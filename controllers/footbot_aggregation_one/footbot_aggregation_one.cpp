@@ -175,12 +175,12 @@ static inline bool IsOverTargetArea(const argos::CCI_FootBotMotorGroundSensor::T
 }
 void CFootBotAggregationOne::ControlStep()
 {
+   //------------------Transmit Hop Count-----------------//
    rnb_actuator_->ClearData();
    rnb_actuator_->SetData(0,hop_count_.current_hop_count_);
-   // Turning
+   //------------------Handle Turning___-----------------//
    if (rotation_handler_.rot_frames_remaining_ != 0)
    {
-      //std::cout << GetId() << "Rotation manager reached" << std::endl;
       if (rotation_handler_.rot_frames_remaining_ < 0)
       {
          wheels_->SetLinearVelocity(-wheel_velocity_, wheel_velocity_);
@@ -193,11 +193,10 @@ void CFootBotAggregationOne::ControlStep()
       }
       return;
    }
-   // Avoid collisions
+   //------------------Avoid Collision-------------------//
    const argos::CVector2 avg_prox_sen_angle = FindAvg(proximity_sen_->GetReadings());
    if (avg_prox_sen_angle.Length() > delta_)
    {
-      //std::cout << GetId() << "Collision avoidance reached" << std::endl;
       if (avg_prox_sen_angle.Angle().GetValue() > 0)
       {
          wheels_->SetLinearVelocity(wheel_velocity_, 0);
@@ -208,18 +207,7 @@ void CFootBotAggregationOne::ControlStep()
       }
       return;
    }
-/* This sensor provides access to the motor sensors. The readings are in the following
- * order (seeing the robot from TOP, battery socket is the BACK):
- *
- *       front
- *
- * l|w          r|w
- * e|h   1  0   i|h
- * f|e          g|e
- * t|e   2  3   h|e
- *  |l          t|l
- *
- */
+   //------------------Check if a target area has been reached-----------------//
    const argos::CCI_FootBotMotorGroundSensor::TReadings& gnd_sen_readings = ground_sensor_->GetReadings();
 #if __LOG_GROUND_SEN == 1
    std::cout << 
@@ -243,24 +231,27 @@ void CFootBotAggregationOne::ControlStep()
       rotation_handler_.NonZeroRotateTo(rng_angle_(rng_));
       return;
    }
-
+   //------------------Handle Hop Count Data Transmitted By Other Bots-----------------//
    argos::CCI_RangeAndBearingSensor::TReadings rnb_readings = rnb_sensor_->GetReadings();
-   const std::vector<argos::CCI_RangeAndBearingSensor::SPacket>::iterator rnb_reading_min = FindMinSensorReading(rnb_readings,hop_count_.hop_count_max_);
-   //The go straight angle now works, however for some reason it still tries to navigate to each other when they have the same hop count
-   if(rnb_readings.size() > 0 && rnb_reading_min != rnb_readings.end())
+   if(!rnb_readings.empty())
    {
-     // std::cout << GetId() << "Rotating to small hc" << std::endl;
-      const argos::Real angle_to_smallest_hc = -argos::ToDegrees(rnb_reading_min->HorizontalBearing).GetValue();
-
-      if(!(std::abs(angle_to_smallest_hc) < alpha_.GetAbsoluteValue()))
+      const std::vector<argos::CCI_RangeAndBearingSensor::SPacket>::iterator rnb_reading_min = FindMinSensorReading(rnb_readings,hop_count_.hop_count_max_);
+      //The go straight angle now works, however for some reason it still tries to navigate to each other when they have the same hop count
+      if(rnb_readings.size() > 0 && rnb_reading_min != rnb_readings.end())
       {
-         rotation_handler_.RotateTo(angle_to_smallest_hc);
-         hop_count_.current_hop_count_ = (rnb_reading_min->Data[0] + 1);
-         return;
+      // std::cout << GetId() << "Rotating to small hc" << std::endl;
+         const argos::Real angle_to_smallest_hc = -argos::ToDegrees(rnb_reading_min->HorizontalBearing).GetValue();
+
+         if(!(std::abs(angle_to_smallest_hc) < alpha_.GetAbsoluteValue()))
+         {
+            rotation_handler_.RotateTo(angle_to_smallest_hc);
+            hop_count_.current_hop_count_ = (rnb_reading_min->Data[0] + 1);
+            return;
+         }
+         
       }
-      
    }
-  // std::cout << GetId() << "Going straight" << std::endl;
+   //------------------Move Forward-----------------//
    wheels_->SetLinearVelocity(wheel_velocity_, wheel_velocity_);
 }
 std::string CFootBotAggregationOne::GetHC()
