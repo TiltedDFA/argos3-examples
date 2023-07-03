@@ -172,12 +172,13 @@ static inline bool IsOverTargetArea(const argos::CCI_FootBotMotorGroundSensor::T
             readings[2].Value < 0.1 || 
             readings[3].Value < 0.1;
 }
-void CFootBotAggregationOne::ControlStep()
+void CFootBotAggregationOne::TransmitHCData()
 {
-   //------------------Transmit Hop Count-----------------//
    rnb_actuator_->ClearData();
    rnb_actuator_->SetData(0,hop_count_.current_hop_count_);
-   //------------------Handle Turning___-----------------//
+}
+bool CFootBotAggregationOne::HandleTurning()
+{
    if (rotation_handler_.rot_frames_remaining_ != 0)
    {
       if (rotation_handler_.rot_frames_remaining_ < 0)
@@ -190,9 +191,12 @@ void CFootBotAggregationOne::ControlStep()
          wheels_->SetLinearVelocity(wheel_velocity_, -wheel_velocity_);
          rotation_handler_.ApproachZero();
       }
-      return;
+      return true;
    }
-   //------------------Avoid Collision-------------------//
+   return false;
+}
+bool CFootBotAggregationOne::AvoidCollisions()
+{
    const argos::CVector2 avg_prox_sen_angle = FindAvg(proximity_sen_->GetReadings());
    if (avg_prox_sen_angle.Length() > delta_)
    {
@@ -204,16 +208,22 @@ void CFootBotAggregationOne::ControlStep()
       {
          wheels_->SetLinearVelocity(0, wheel_velocity_);
       }
-      return;
+      return true;
    }
-   //-------------------Handleing Hop Count & Forgetting--------------------------------//
+   return false;
+}
+bool CFootBotAggregationOne::HandleForgetting()
+{
    if(hop_count_.update())
    {
       rotation_handler_.NonZeroRotateTo(rng_angle_(rng_));
       //rotation_handler_.RotateTo(rng_angle_(rng_));
-      return;
+      return true;
    }
-   //------------------Check if a target area has been reached-----------------//
+   return false;
+}
+bool CFootBotAggregationOne::HandleTargetArea()
+{
    const argos::CCI_FootBotMotorGroundSensor::TReadings& gnd_sen_readings = ground_sensor_->GetReadings();
 #if __LOG_GROUND_SEN == 1
    std::cout << 
@@ -230,9 +240,12 @@ void CFootBotAggregationOne::ControlStep()
 #endif
       hop_count_.current_hop_count_ = 0;
       rotation_handler_.NonZeroRotateTo(rng_angle_(rng_));
-      return;
+      return true;
    }
-   //------------------Handle Hop Count Data Transmitted By Other Bots-----------------//
+   return false;
+}
+bool CFootBotAggregationOne::ReadTransmitions()
+{
    argos::CCI_RangeAndBearingSensor::TReadings rnb_readings = rnb_sensor_->GetReadings();
    if(!rnb_readings.empty())
    {
@@ -247,13 +260,26 @@ void CFootBotAggregationOne::ControlStep()
          {
             rotation_handler_.RotateTo(angle_to_smallest_hc);
             hop_count_.current_hop_count_ = (rnb_reading_min->Data[0] + 1);
-            return;
+            return true;
          }
          
       }
    }
-   //------------------Move Forward-----------------//
+   return false;
+}
+void CFootBotAggregationOne::MoveForward()
+{
    wheels_->SetLinearVelocity(wheel_velocity_, wheel_velocity_);
+}
+void CFootBotAggregationOne::ControlStep()
+{
+   TransmitHCData();
+   if(HandleTurning())return;
+   if(AvoidCollisions())return;
+   if(HandleForgetting())return;
+   if(HandleTargetArea())return;
+   if(ReadTransmitions())return;
+   MoveForward();
 }
 std::string CFootBotAggregationOne::GetHC()
 {

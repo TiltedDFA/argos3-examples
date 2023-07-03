@@ -64,11 +64,22 @@ public:
    virtual void Reset() {}
    virtual void Destroy() {}
    std::string GetHC();
+   
+private:
+   void TransmitHCData();
+   bool HandleTurning();
+   bool AvoidCollisions();
+   bool HandleForgetting();
+   bool HandleTargetArea();
+   bool ReadTransmitions();
+   void MoveForward();
+
 public:
    //threadsafe random number gen
    inline static std::mt19937 rng_{std::random_device{}()};
    //will be used to generate a random direction for the robots to switch to
    inline static std::uniform_int_distribution<int16_t> rng_angle_{-180,180};
+
 private:
    //robot components
    argos::CCI_DifferentialSteeringActuator* wheels_;
