@@ -16,17 +16,14 @@ void CAggergationUserFunction::Draw(CFootBotEntity& c_entity) {
     * See also the description in
     * $ argos3 -q foot-bot
     */
+   QFont font = QFont("SansSerif", 50, QFont::Bold);
    argos::CCI_Controller& controller = c_entity.GetControllableEntity().GetController();
-   DrawText(CVector3(0.0, -0.05, 0.3),   // position
-            c_entity.GetId().c_str(),
-            CColor::RED); // text
+   std::string text = c_entity.GetId() + ": " + dynamic_cast<CFootBotAggregationOne&>(controller).GetHC();
 
-   DrawText(CVector3(0.0, 0.05, 0.3),   // position
-            //dynamic_cast<CFootBotAggregationOne&>(c_entity) CFootBotAggregationOne is controller
-            dynamic_cast<CFootBotAggregationOne&>(controller)
-                  .GetHC()
-                  .c_str(),
-            CColor::RED); // text
+   DrawText(CVector3(0.0, 0.0, 0.3),   // position
+            text.c_str(),
+            CColor::BLUE,
+            font); // text
 }
 
 /****************************************/
