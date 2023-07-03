@@ -80,6 +80,11 @@ public:
    //will be used to generate a random direction for the robots to switch to
    inline static std::uniform_int_distribution<int16_t> rng_angle_{-180,180};
 
+    int hop_count;
+    int hop_count_max;
+    int forgetting_counter;
+    int forgetting_threshold;
+
 private:
    //robot components
    argos::CCI_DifferentialSteeringActuator* wheels_;

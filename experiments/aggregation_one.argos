@@ -30,9 +30,9 @@
         Velocity="5" 
         Delta="0.1" 
         Alpha="10" 
-        HopCountMax="99"
+        HopCountMax="10"
         ForgettingAllowed="true"
-        ForgettingTimePeriod="1000"
+        ForgettingTimePeriod="100"
       />  
     </footbot_aggregation_one>
 

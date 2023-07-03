@@ -18,7 +18,7 @@ void CAggergationUserFunction::Draw(CFootBotEntity& c_entity) {
     */
    QFont font = QFont("SansSerif", 50, QFont::Bold);
    argos::CCI_Controller& controller = c_entity.GetControllableEntity().GetController();
-   std::string text = c_entity.GetId() + ": " + dynamic_cast<CFootBotAggregationOne&>(controller).GetHC();
+   std::string text = c_entity.GetId() + ": " + std::to_string(dynamic_cast<CFootBotAggregationOne&>(controller).hop_count);
 
    DrawText(CVector3(0.0, 0.0, 0.3),   // position
             text.c_str(),

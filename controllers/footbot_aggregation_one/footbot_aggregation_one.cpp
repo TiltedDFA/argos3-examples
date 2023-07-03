@@ -104,7 +104,11 @@ CFootBotAggregationOne::CFootBotAggregationOne() : wheels_(NULL),
                                                    delta_(0.5f),
                                                    alpha_(10.0f),
                                                    hop_count_(CHopCountManager(0,50,200)),
-                                                   rotation_handler_(wheel_velocity_)
+                                                   rotation_handler_(wheel_velocity_),
+                                                   hop_count(0),
+                                                   hop_count_max(0),
+                                                   forgetting_counter(0),
+                                                   forgetting_threshold(0)
 {}
 void CFootBotAggregationOne::Init(argos::TConfigurationNode &t_node)
 {
@@ -120,6 +124,11 @@ void CFootBotAggregationOne::Init(argos::TConfigurationNode &t_node)
    argos::GetNodeAttributeOrDefault(t_node, "HopCountMax", hop_count_.hop_count_max_, hop_count_.hop_count_max_);
    argos::GetNodeAttributeOrDefault(t_node, "ForgettingAllowed", hop_count_.forgetting_enabled_, hop_count_.forgetting_enabled_);
    argos::GetNodeAttributeOrDefault(t_node, "ForgettingTimePeriod", hop_count_.forgetting_tp_, hop_count_.forgetting_tp_);
+
+   hop_count_max = hop_count_.hop_count_max_;
+   hop_count = hop_count_max;
+   forgetting_threshold = hop_count_.forgetting_tp_;
+   forgetting_counter = 0;
    
    hop_count_.current_hop_count_ = hop_count_.hop_count_max_;
    rotation_handler_ = std::move(CRotationHandler(wheel_velocity_));
@@ -279,13 +288,42 @@ void CFootBotAggregationOne::ControlStep()
    // MoveForward();
 
    // Most accurate implamentation
-   TransmitHCData();
-   if(HandleTurning())return;
-   if(AvoidCollisions())return;
-   if(HandleTargetArea())return;
-   if(HandleForgetting())return;
-   if(ReadTransmitions())return;
-   MoveForward();
+//   TransmitHCData();
+//   if(HandleTurning())return;
+//   if(AvoidCollisions())return;
+//   if(HandleTargetArea())return;
+//   if(HandleForgetting())return;
+//   if(ReadTransmitions())return;
+//   MoveForward();
+
+    const argos::CCI_FootBotMotorGroundSensor::TReadings& gnd_sen_readings = ground_sensor_->GetReadings();
+
+    if(IsOverTargetArea(gnd_sen_readings))
+    {
+        hop_count = 0;
+    }
+
+    if(forgetting_counter > forgetting_threshold)
+    {
+        forgetting_counter = 0;
+        hop_count++;
+    }
+
+    const argos::CCI_RangeAndBearingSensor::TReadings& tPackets = rnb_sensor_->GetReadings();
+
+    for(size_t i = 0; i < tPackets.size(); ++i) {
+        int neighbour_hop_count = tPackets[i].Data[0];
+        if(neighbour_hop_count < hop_count)
+            hop_count = neighbour_hop_count + 1;
+    }
+
+    if(hop_count > hop_count_max)
+        hop_count = hop_count_max;
+
+    rnb_actuator_->ClearData();
+    rnb_actuator_->SetData(0,hop_count);
+
+    forgetting_counter++;
 }
 std::string CFootBotAggregationOne::GetHC()
 {
