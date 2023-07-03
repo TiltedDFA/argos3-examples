@@ -217,7 +217,6 @@ bool CFootBotAggregationOne::HandleForgetting()
    if(hop_count_.update())
    {
       rotation_handler_.NonZeroRotateTo(rng_angle_(rng_));
-      //rotation_handler_.RotateTo(rng_angle_(rng_));
       return true;
    }
    return false;
@@ -250,10 +249,8 @@ bool CFootBotAggregationOne::ReadTransmitions()
    if(!rnb_readings.empty())
    {
       const std::vector<argos::CCI_RangeAndBearingSensor::SPacket>::iterator rnb_reading_min = FindMinSensorReading(rnb_readings,hop_count_.hop_count_max_);
-      //The go straight angle now works, however for some reason it still tries to navigate to each other when they have the same hop count
       if(rnb_readings.size() > 0 && rnb_reading_min != rnb_readings.end())
       {
-      // std::cout << GetId() << "Rotating to small hc" << std::endl;
          const argos::Real angle_to_smallest_hc = -argos::ToDegrees(rnb_reading_min->HorizontalBearing).GetValue();
 
          if(!(std::abs(angle_to_smallest_hc) < alpha_.GetAbsoluteValue()))
@@ -262,7 +259,6 @@ bool CFootBotAggregationOne::ReadTransmitions()
             hop_count_.current_hop_count_ = (rnb_reading_min->Data[0] + 1);
             return true;
          }
-         
       }
    }
    return false;
@@ -273,11 +269,21 @@ void CFootBotAggregationOne::MoveForward()
 }
 void CFootBotAggregationOne::ControlStep()
 {
+   // Most effective order
+   // TransmitHCData();
+   // if(HandleTurning())return;
+   // if(AvoidCollisions())return;
+   // if(HandleForgetting())return;
+   // if(HandleTargetArea())return;
+   // if(ReadTransmitions())return;
+   // MoveForward();
+
+   // Most accurate implamentation
    TransmitHCData();
    if(HandleTurning())return;
    if(AvoidCollisions())return;
-   if(HandleForgetting())return;
    if(HandleTargetArea())return;
+   if(HandleForgetting())return;
    if(ReadTransmitions())return;
    MoveForward();
 }
