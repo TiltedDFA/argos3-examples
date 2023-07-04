@@ -1,7 +1,7 @@
 /*
  * AUTHOR: Malik Tremain
  *
- * This will be an implamentation of the hop count aggregation alg as
+ * This will be an implementation of the hop count aggregation alg as
  * described in Schmickl T, Möslinger C, Crailsheim K 2007 Collective perception in a robot swarm. Swarm
  * Robotics, (Springer, Berlin) pp.144–157
  * 
@@ -33,7 +33,7 @@
  *    velocity is {-5,5}). The calculated value is then stored in time_needed_180_. When a RotateTo() method is called
  *    the class will calcuate the number of frames needed to achieve that specific angle of rotation.
  *    The calculated result is stored in rot_frames_remaining_, holding a negative value to indicate anti-clockwise rotation and
- *    a positive value for clockwise rotation. Every time step the "ApproachZero()" method is called.
+ *    a positive value for clockwise rotation. Every timestep the "ApproachZero()" method is called.
  *    This will change the value of rot_frames_remaining_ to get 1 frame closer to zero. If the value of rot_frames_remaining is 
  *    exactly zero then the HandleRotation() method in CFootBotAggregationOne will do nothing.
  */
@@ -60,13 +60,13 @@ private:
  * @brief This class is used to handle hop count and "forgetting".
  * This class is used to handle the robot's current hop count and "forgetting". The main method of
  * this class is update(). If forgetting is disabled in the XML file then it will do nothing. If 
- * forgetting is enabled then it will decrease the value of forget_tp_counter(a variable used to
+ * forgetting is enabled then it will decrease the value of forget_tp_counter_(a variable used to
  * track when to activate forgetting). The inital value of forget_tp_counter is forgetting_tp
  * which is the time period in frames of when to activate forget. When the value of forget_tp_counter
- * is zero then it will set the state of currently_forgetting_ to true. In the next time steps the 
- * update method will increase the value of current_hop_count_ if current_hop_count_ is less than 
- * max_hop_count_.When current_hop_count_'s value is the same as max_hop_count_ the update method
- * will then set the state of current_forgetting_ to false and it will reset the forget_tp_counter_
+ * is zero then it will set the state of currently_forgetting_ to true. In the comming timesteps the 
+ * update method will increase the value of current_hop_count_, if current_hop_count_ is less than 
+ * max_hop_count_. When current_hop_count_'s value is the same as max_hop_count_ the update method
+ * will then set the state of currently_forgetting_ to false and it will reset the forget_tp_counter_
  * to the value of forgetting_tp_.
  */
 class CHopCountManager 

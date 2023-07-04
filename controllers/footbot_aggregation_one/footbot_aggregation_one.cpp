@@ -1,7 +1,7 @@
 #include "footbot_aggregation_one.h"
 #include <argos3/core/utility/configuration/argos_configuration.h>
 #include <argos3/core/utility/math/vector2.h>
-#include <unordered_map>
+
 
 CRotationHandler::CRotationHandler(argos::Real robo_wheel_vel)
     : rot_frames_remaining_(0),
@@ -19,14 +19,15 @@ void CRotationHandler::RotateTo(argos::Real desired_turning_angle)
       std::cerr << "Incorrect angle input into CRotationHandler::RotateTo" << std::endl;
       return;
    }
-   if (desired_turning_angle == 0)
-      return;
+   
+   if (desired_turning_angle == 0)return;
+
    if (desired_turning_angle < 0)
    {
-
       rot_frames_remaining_ = static_cast<int8_t>((desired_turning_angle / 180 * time_needed_180_));
       return;
    }
+
    rot_frames_remaining_ = static_cast<int8_t>((desired_turning_angle / 180) * time_needed_180_);
 }
 
