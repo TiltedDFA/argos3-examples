@@ -3,6 +3,11 @@
 #include <argos3/core/utility/math/vector2.h>
 #include <unordered_map>
 
+
+//How long does forgetting last? should it be until all of the robots have reached HCmax or is it an induvidual thing?
+
+
+
 #define ___LOG(comment, data) std::cout << (comment) << (data) << std::endl
 #define __LOG_XML_DATA 1
 #define __LOG_PROX_DATA 0
@@ -55,6 +60,7 @@ void CRotationHandler::NonZeroRotateTo(argos::Real desired_turning_angle)
       RotateTo(desired_turning_angle);
    }
 }
+int8_t CRotationHandler::GetRemainingRotationTime(){return rot_frames_remaining_;}
 /****************************************/
 /****************************************/
 CHopCountManager::CHopCountManager(bool forgetting_allowed, uint16_t hopcount_max, uint16_t forgetting_tp)
@@ -153,16 +159,29 @@ static inline bool IsOverTargetArea(const argos::CCI_FootBotMotorGroundSensor::T
             readings[2].Value < 0.1 || 
             readings[3].Value < 0.1;
 }
+void CFootBotAggregationOne::RealTimeRotate(const argos::CRadians& avg_bearing)
+{
+   if(avg_bearing.GetValue() == 0) return;
+   if(avg_bearing.GetValue() > 0)
+   {
+      wheels_->SetLinearVelocity(wheel_velocity_ / 2, wheel_velocity_);
+   }
+   else
+   {
+      wheels_->SetLinearVelocity(wheel_velocity_, wheel_velocity_ / 2);
+   }
+}
 void CFootBotAggregationOne::TransmitHCData()
 {
    rnb_actuator_->ClearData();
    rnb_actuator_->SetData(0,hop_count_.current_hop_count_);
+   std::cout << "Data sent: " << hop_count_.current_hop_count_ << std::endl;
 }
 bool CFootBotAggregationOne::HandleTurning()
 {
-   if (rotation_handler_.rot_frames_remaining_ != 0)
+   if (rotation_handler_.GetRemainingRotationTime() != 0)
    {
-      if (rotation_handler_.rot_frames_remaining_ < 0)
+      if (rotation_handler_.GetRemainingRotationTime() < 0)
       {
          wheels_->SetLinearVelocity(-wheel_velocity_, wheel_velocity_);
          rotation_handler_.ApproachZero();
@@ -205,19 +224,9 @@ bool CFootBotAggregationOne::HandleForgetting()
 bool CFootBotAggregationOne::HandleTargetArea()
 {
    const argos::CCI_FootBotMotorGroundSensor::TReadings& gnd_sen_readings = ground_sensor_->GetReadings();
-#if __LOG_GROUND_SEN == 1
-   std::cout << 
-      "Value of sen0: " << gnd_sen_readings[0].Value <<
-      "Value of sen1: " << gnd_sen_readings[1].Value <<
-      "Value of sen2: " << gnd_sen_readings[2].Value <<
-      "Value of sen3: " << gnd_sen_readings[3].Value <<
-   std::endl;
-#endif
+
    if(IsOverTargetArea(gnd_sen_readings))
    {
-#if __LOG_OVER_TRGT_AREA == 1
-      std::cout << GetId() << " is over target area" << std::endl;
-#endif
       hop_count_.current_hop_count_ = 0;
       rotation_handler_.NonZeroRotateTo(rng_angle_(rng_));
       return true;
@@ -226,22 +235,25 @@ bool CFootBotAggregationOne::HandleTargetArea()
 }
 bool CFootBotAggregationOne::ReadTransmitions()
 {
-   const argos::CCI_RangeAndBearingSensor::TReadings& rnb_readings = rnb_sensor_->GetReadings();
-   if(rnb_readings.empty())
-   {
-      return false;
-   }
+   argos::CCI_RangeAndBearingSensor::TReadings rnb_readings = rnb_sensor_->GetReadings();
+   
+   if(rnb_readings.empty()) {return false;}
 
+   std::cout << rnb_readings.size() << std::endl;
    uint16_t min_hop_count{hop_count_.hop_count_max_}; 
-   for(auto it = rnb_readings.cbegin(); it != rnb_readings.cend();++it)
+
+
+   for(std::size_t i = 0;i < rnb_readings.size();++i)
    {
-      if(it->Data[0] < min_hop_count) min_hop_count = it->Data[0];
+
+      if(rnb_readings[i].Data[0] < min_hop_count) min_hop_count = rnb_readings[i].Data[0];
    }
 
-   if(min_hop_count >= hop_count_.current_hop_count_) return false;
+   if(min_hop_count >= hop_count_.hop_count_max_ || 
+   min_hop_count > hop_count_.current_hop_count_) return false;
    
    argos::CRadians total_bearing{0.0f};
-   int64_t num_occurances{0};
+   argos::Real num_occurances{0};
    for(auto it = rnb_readings.cbegin(); it != rnb_readings.cend();++it)
    {
       if(it->Data[0] == min_hop_count)
@@ -251,14 +263,14 @@ bool CFootBotAggregationOne::ReadTransmitions()
       }
    }
 
-   const argos::Real angle_to_smallest_hc = -argos::ToDegrees(total_bearing/num_occurances).GetValue();
-   if(std::abs(angle_to_smallest_hc) > alpha_.GetValue())
+   total_bearing /= num_occurances;
+
+   hop_count_.current_hop_count_ = (min_hop_count + 1);
+   if(argos::ToDegrees(total_bearing).GetAbsoluteValue() > alpha_.GetValue())
    {
-      rotation_handler_.RotateTo(angle_to_smallest_hc);
-      hop_count_.current_hop_count_ = (min_hop_count + 1);
+      RealTimeRotate(total_bearing);
       return true;
    }
-
    return false;
 }
 void CFootBotAggregationOne::MoveForward()
@@ -269,17 +281,15 @@ void CFootBotAggregationOne::ControlStep()
 {
    TransmitHCData();
    if(HandleTurning())return;
-   
+
    if(HandleTargetArea())return;
    if(HandleForgetting())return;
    if(ReadTransmitions())return;
 
    if(AvoidCollisions())return;
-
-
    MoveForward();
 }
-std::string CFootBotAggregationOne::GetHC()
+std::string CFootBotAggregationOne::GetHopCount()
 {
    return std::to_string(hop_count_.current_hop_count_);
 }

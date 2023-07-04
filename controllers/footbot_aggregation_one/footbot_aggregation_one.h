@@ -4,8 +4,11 @@
  * This will be an implamentation of the hop count aggregation alg as
  * described in Schmickl T, Möslinger C, Crailsheim K 2007 Collective perception in a robot swarm. Swarm
  * Robotics, (Springer, Berlin) pp.144–157
+ * 
+ * TODO: 
+ *    -change robot LED colour based on forgetting state
  */
-// 89 time steps to do 360 turn when wheel speed is (5,-5)
+
 #ifndef FOOTBOT_AGGREGATION_ONE_H
 #define FOOTBOT_AGGREGATION_ONE_H
 
@@ -18,28 +21,25 @@
 #include <argos3/plugins/robots/foot-bot/control_interface/ci_footbot_motor_ground_sensor.h>
 #include <random>
 #include <string>
-/**
- * TODO
- * DISPLAY HOPCOUNTS ALONG WITH IDS IN SIM
- * CREATE TARGET AREAS FOR ROBOTS TO GO TO
- * IMPLAMENT TARGET AREA FINDING SYSTEM
- */
-struct CRotationHandler
+
+class CRotationHandler
 {
+public:
    CRotationHandler()=delete;
    CRotationHandler(argos::Real robo_wheel_vel);
-   ~CRotationHandler()=default;
+
    void FindTimeNeededFor180(argos::Real robo_wheel_vel);
    void RotateTo(argos::Real desired_turning_angle);
    void ApproachZero();
-   //This function will only allow rotation to be registered 
-   //if it not currently rotation already
    void NonZeroRotateTo(argos::Real desired_turning_angle);
-   
+
+   int8_t GetRemainingRotationTime();
+
+private:
    int8_t rot_frames_remaining_;
    uint8_t time_needed_180_;
 };
-//Would at some point like to change robo LED colour based on forgetting state
+
 struct CHopCountManager 
 {
    CHopCountManager()=delete;
@@ -63,9 +63,10 @@ public:
    virtual void ControlStep();
    virtual void Reset() {}
    virtual void Destroy() {}
-   std::string GetHC();
+   std::string GetHopCount();
    
 private:
+   void RealTimeRotate(const argos::CRadians& avg_bearing);
    void TransmitHCData();
    bool HandleTurning();
    bool AvoidCollisions();
@@ -82,16 +83,16 @@ public:
 
 private:
    //robot components
-   argos::CCI_DifferentialSteeringActuator* wheels_;
-   argos::CCI_FootBotProximitySensor* proximity_sen_;
-   argos::CCI_RangeAndBearingActuator* rnb_actuator_;
-   argos::CCI_RangeAndBearingSensor* rnb_sensor_;
-   argos::CCI_FootBotMotorGroundSensor* ground_sensor_;
+   argos::CCI_DifferentialSteeringActuator*  wheels_;
+   argos::CCI_FootBotProximitySensor*        proximity_sen_;
+   argos::CCI_RangeAndBearingActuator*       rnb_actuator_;
+   argos::CCI_RangeAndBearingSensor*         rnb_sensor_;
+   argos::CCI_FootBotMotorGroundSensor*      ground_sensor_;
 
    //The group below is to be read from the XML 
-   argos::Real wheel_velocity_;
-   argos::Real delta_;
-   argos::CDegrees alpha_;
+   argos::Real       wheel_velocity_;
+   argos::Real       delta_;
+   argos::CDegrees   alpha_;
    
 
    //Other internal variables
