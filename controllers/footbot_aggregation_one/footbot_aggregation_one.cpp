@@ -15,8 +15,7 @@
 CRotationHandler::CRotationHandler(argos::Real robo_wheel_vel)
     : rot_frames_remaining_(0),
       time_needed_180_(static_cast<uint8_t>(223 / robo_wheel_vel))
-{
-}
+{}
 void CRotationHandler::FindTimeNeededFor180(argos::Real robo_wheel_vel)
 {
    time_needed_180_ = static_cast<uint8_t>(223 / robo_wheel_vel);
@@ -32,8 +31,8 @@ void CRotationHandler::RotateTo(argos::Real desired_turning_angle)
       return;
    if (desired_turning_angle < 0)
    {
-      desired_turning_angle *= -1;
-      rot_frames_remaining_ = static_cast<int8_t>(-((desired_turning_angle / 180) * time_needed_180_));
+
+      rot_frames_remaining_ = static_cast<int8_t>((desired_turning_angle / 180 * time_needed_180_));
       return;
    }
    rot_frames_remaining_ = static_cast<int8_t>((desired_turning_angle / 180) * time_needed_180_);
@@ -268,13 +267,16 @@ void CFootBotAggregationOne::MoveForward()
 }
 void CFootBotAggregationOne::ControlStep()
 {
-   // Most accurate implamentation
    TransmitHCData();
    if(HandleTurning())return;
-   if(AvoidCollisions())return;
+   
    if(HandleTargetArea())return;
    if(HandleForgetting())return;
    if(ReadTransmitions())return;
+
+   if(AvoidCollisions())return;
+
+
    MoveForward();
 }
 std::string CFootBotAggregationOne::GetHC()
