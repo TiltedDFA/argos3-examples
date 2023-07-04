@@ -66,7 +66,7 @@ int8_t CRotationHandler::GetRemainingRotationTime(){return rot_frames_remaining_
 CHopCountManager::CHopCountManager(bool forgetting_allowed, uint16_t hopcount_max, uint16_t forgetting_tp)
     : forgetting_enabled_(forgetting_allowed),
       forgetting_tp_(forgetting_tp),
-      hop_count_max_(hopcount_max),
+      max_hop_count_(hopcount_max),
       forget_tp_counter_(0),
       current_hop_count_(hopcount_max),
       currently_forgetting_(false)
@@ -87,7 +87,7 @@ bool CHopCountManager::update()
    if (currently_forgetting_)
    {
       std::cout << "Currently forgetting " << std::endl;
-      if (current_hop_count_ == hop_count_max_)
+      if (current_hop_count_ == max_hop_count_)
       {
          std::cout << "Deactivated forgetting " << std::endl;
          currently_forgetting_ = false;
@@ -100,6 +100,14 @@ bool CHopCountManager::update()
    --forget_tp_counter_;
    return false;
 }
+void CHopCountManager::SetMaxHopCount(uint16_t max_hc)                  {max_hop_count_ = max_hc;}
+void CHopCountManager::SetCurrentHopCount(uint16_t hc)                  {current_hop_count_ = hc;}
+void CHopCountManager::SetForgettingEnabled(bool ForgettingAllowed)     {forgetting_enabled_ = ForgettingAllowed;}
+void CHopCountManager::SetForgettingTimePeriod(uint16_t forgetting_tp)  {forgetting_tp_ = forgetting_tp;}
+uint16_t CHopCountManager::GetMaxHopCount()const                        {return max_hop_count_;}
+uint16_t CHopCountManager::GetCurrentHopCount()const                    {return current_hop_count_;}
+uint16_t CHopCountManager::GetForgettingTimePeriod()const               {return forgetting_tp_;}
+bool CHopCountManager::GetForgettingEnabled()const                      {return forgetting_enabled_;}
 /****************************************/
 /****************************************/
 CFootBotAggregationOne::CFootBotAggregationOne() : wheels_(NULL),
@@ -109,7 +117,7 @@ CFootBotAggregationOne::CFootBotAggregationOne() : wheels_(NULL),
                                                    wheel_velocity_(2.5f),
                                                    delta_(0.5f),
                                                    alpha_(10.0f),
-                                                   hop_count_(CHopCountManager(0,50,200)),
+                                                   hop_count_(true,99,1000),
                                                    rotation_handler_(wheel_velocity_)
 {}
 void CFootBotAggregationOne::Init(argos::TConfigurationNode &t_node)
@@ -120,14 +128,23 @@ void CFootBotAggregationOne::Init(argos::TConfigurationNode &t_node)
    rnb_sensor_    = GetSensor<   argos::CCI_RangeAndBearingSensor       >("range_and_bearing");
    ground_sensor_ = GetSensor<   argos::CCI_FootBotMotorGroundSensor    >("footbot_motor_ground" );
 
+
+   uint16_t xml_max_hop_count{0};
+   bool xml_forgetting_allowed{false};
+   uint16_t xml_forgetting_time_period{0};
+
    argos::GetNodeAttributeOrDefault(t_node, "Velocity", wheel_velocity_, wheel_velocity_);
    argos::GetNodeAttributeOrDefault(t_node, "Delta", delta_, delta_);
    argos::GetNodeAttributeOrDefault(t_node, "Alpha", alpha_, alpha_);
-   argos::GetNodeAttributeOrDefault(t_node, "HopCountMax", hop_count_.hop_count_max_, hop_count_.hop_count_max_);
-   argos::GetNodeAttributeOrDefault(t_node, "ForgettingAllowed", hop_count_.forgetting_enabled_, hop_count_.forgetting_enabled_);
-   argos::GetNodeAttributeOrDefault(t_node, "ForgettingTimePeriod", hop_count_.forgetting_tp_, hop_count_.forgetting_tp_);
+   argos::GetNodeAttributeOrDefault(t_node, "HopCountMax", xml_max_hop_count, hop_count_.GetMaxHopCount());
+   argos::GetNodeAttributeOrDefault(t_node, "ForgettingAllowed", xml_forgetting_allowed, hop_count_.GetForgettingEnabled());
+   argos::GetNodeAttributeOrDefault(t_node, "ForgettingTimePeriod", xml_forgetting_time_period, hop_count_.GetForgettingTimePeriod());
    
-   hop_count_.current_hop_count_ = hop_count_.hop_count_max_;
+   hop_count_.SetMaxHopCount(xml_max_hop_count);
+   hop_count_.SetForgettingEnabled(xml_forgetting_allowed);
+   hop_count_.SetForgettingTimePeriod(xml_forgetting_time_period);
+   hop_count_.SetCurrentHopCount(hop_count_.GetMaxHopCount());
+
    rotation_handler_ = std::move(CRotationHandler(wheel_velocity_));
 
 
@@ -135,10 +152,10 @@ void CFootBotAggregationOne::Init(argos::TConfigurationNode &t_node)
    ___LOG("velocity: ", wheel_velocity_);
    ___LOG("delta: ", delta_);
    ___LOG("alpha: ", alpha_);
-   ___LOG("HCmax: ", hop_count_.hop_count_max_);
-   ___LOG("CurrentHC: ", hop_count_.current_hop_count_);
-   ___LOG("Forgetting?: ", hop_count_.forgetting_enabled_);
-   ___LOG("HCTP: ", hop_count_.forgetting_tp_);
+   ___LOG("HCmax: ", hop_count_.GetMaxHopCount());
+   ___LOG("CurrentHC: ", hop_count_.GetCurrentHopCount());
+   ___LOG("Forgetting?: ", hop_count_.GetForgettingEnabled());
+   ___LOG("HCTP: ", hop_count_.GetForgettingTimePeriod());
 #endif
 }
 //for the proximity sensor
@@ -174,8 +191,8 @@ void CFootBotAggregationOne::RealTimeRotate(const argos::CRadians& avg_bearing)
 void CFootBotAggregationOne::TransmitHCData()
 {
    rnb_actuator_->ClearData();
-   rnb_actuator_->SetData(0,hop_count_.current_hop_count_);
-   std::cout << "Data sent: " << hop_count_.current_hop_count_ << std::endl;
+   rnb_actuator_->SetData(0,hop_count_.GetCurrentHopCount());
+   std::cout << "Data sent: " << hop_count_.GetCurrentHopCount() << std::endl;
 }
 bool CFootBotAggregationOne::HandleTurning()
 {
@@ -227,7 +244,7 @@ bool CFootBotAggregationOne::HandleTargetArea()
 
    if(IsOverTargetArea(gnd_sen_readings))
    {
-      hop_count_.current_hop_count_ = 0;
+      hop_count_.SetCurrentHopCount(0);
       rotation_handler_.NonZeroRotateTo(rng_angle_(rng_));
       return true;
    }
@@ -240,7 +257,7 @@ bool CFootBotAggregationOne::ReadTransmitions()
    if(rnb_readings.empty()) {return false;}
 
    std::cout << rnb_readings.size() << std::endl;
-   uint16_t min_hop_count{hop_count_.hop_count_max_}; 
+   uint16_t min_hop_count{hop_count_.GetMaxHopCount()}; 
 
 
    for(std::size_t i = 0;i < rnb_readings.size();++i)
@@ -249,8 +266,8 @@ bool CFootBotAggregationOne::ReadTransmitions()
       if(rnb_readings[i].Data[0] < min_hop_count) min_hop_count = rnb_readings[i].Data[0];
    }
 
-   if(min_hop_count >= hop_count_.hop_count_max_ || 
-   min_hop_count > hop_count_.current_hop_count_) return false;
+   if(min_hop_count >= hop_count_.GetMaxHopCount() || 
+   min_hop_count > hop_count_.GetCurrentHopCount()) return false;
    
    argos::CRadians total_bearing{0.0f};
    argos::Real num_occurances{0};
@@ -265,7 +282,7 @@ bool CFootBotAggregationOne::ReadTransmitions()
 
    total_bearing /= num_occurances;
 
-   hop_count_.current_hop_count_ = (min_hop_count + 1);
+   hop_count_.SetCurrentHopCount(min_hop_count + 1);
    if(argos::ToDegrees(total_bearing).GetAbsoluteValue() > alpha_.GetValue())
    {
       RealTimeRotate(total_bearing);
@@ -291,6 +308,6 @@ void CFootBotAggregationOne::ControlStep()
 }
 std::string CFootBotAggregationOne::GetHopCount()
 {
-   return std::to_string(hop_count_.current_hop_count_);
+   return std::to_string(hop_count_.GetCurrentHopCount());
 }
 REGISTER_CONTROLLER(CFootBotAggregationOne, "footbot_aggregation_one")

@@ -40,17 +40,28 @@ private:
    uint8_t time_needed_180_;
 };
 
-struct CHopCountManager 
+class CHopCountManager 
 {
+public:
    CHopCountManager()=delete;
-   CHopCountManager(bool forgetting_enabled,uint16_t hop_count_max,uint16_t forgetting_tp);
-   //Will return true if it is currently forgetting,
-   //it will return false otherwise
+   explicit CHopCountManager(bool forgetting_enabled,uint16_t hop_count_max,uint16_t forgetting_tp);
+
    bool update();
 
+   void SetMaxHopCount(uint16_t max_hc);
+   void SetCurrentHopCount(uint16_t hc);
+   void SetForgettingEnabled(bool ForgettingAllowed);
+   void SetForgettingTimePeriod(uint16_t forgetting_tp);
+
+   uint16_t GetMaxHopCount()const;
+   uint16_t GetCurrentHopCount()const;
+   uint16_t GetForgettingTimePeriod()const;
+   bool GetForgettingEnabled()const;
+
+private:
    bool forgetting_enabled_;
    uint16_t forgetting_tp_;
-   uint16_t hop_count_max_;
+   uint16_t max_hop_count_;
    uint16_t forget_tp_counter_;
    uint16_t current_hop_count_;
    bool currently_forgetting_;
