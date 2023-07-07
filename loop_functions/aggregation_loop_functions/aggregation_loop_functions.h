@@ -14,6 +14,7 @@ public:
     virtual ~CAggregationLoopFunctions();
 
     virtual void Init(TConfigurationNode& t_node);
+    virtual CColor GetFloorColor(const CVector2& c_position_on_plane);
     virtual void Reset();
     virtual void Destroy();
     virtual void PreStep();

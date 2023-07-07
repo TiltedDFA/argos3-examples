@@ -143,6 +143,7 @@ void CForagingLoopFunctions::PreStep() {
             ++m_unCollectedFood;
             /* The floor texture must be updated */
             m_pcFloor->SetChanged();
+            std::cout << "Set changed 1 occured\n";
          }
       }
       else {
@@ -159,6 +160,7 @@ void CForagingLoopFunctions::PreStep() {
                   sFoodData.HasFoodItem = true;
                   sFoodData.FoodItemIdx = i;
                   /* The floor texture must be updated */
+                  std::cout << "Set changed 2 occured\n";
                   m_pcFloor->SetChanged();
                   /* We are done */
                   bDone = true;

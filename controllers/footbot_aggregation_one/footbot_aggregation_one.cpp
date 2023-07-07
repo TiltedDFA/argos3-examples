@@ -235,7 +235,7 @@ bool CFootBotAggregationOne::HandleTargetArea()
    return false;
 }
 
-bool CFootBotAggregationOne::ReadTransmitions()
+bool CFootBotAggregationOne::ReadTransmissions()
 {
    argos::CCI_RangeAndBearingSensor::TReadings rnb_readings = rnb_sensor_->GetReadings();
    
@@ -285,8 +285,8 @@ void CFootBotAggregationOne::MoveForward()
  * The private functions can return true or false based on whether they have done something that should be executed for 
  * the rest of the time step. For example, if HandleTurning() decides that it currently needs to turn then it will return
  * true in order to skip the rest of the code, else it will return false. This same technique is used with the other functions.
- * If ReadTransmitions() finds neighbours with a lower hopcount it will then move towards the average vector of the robots with
- * the smallest hopcount. In order for this movement to be carried out it will return true to avoid calling the MoveForward() method
+ * If ReadTransmissions() finds neighbours with a lower hop count it will then move towards the average vector of the robots with
+ * the smallest hop count. In order for this movement to be carried out it will return true to avoid calling the MoveForward() method
  * which if it ran would then change the wheel speed to something else.  
  * 
  */
@@ -297,7 +297,7 @@ void CFootBotAggregationOne::ControlStep()
 
    if(HandleTargetArea())return;
    if(HandleForgetting())return;
-   if(ReadTransmitions())return;
+   if(ReadTransmissions())return;
 
    if(AvoidCollisions())return;
    MoveForward();
