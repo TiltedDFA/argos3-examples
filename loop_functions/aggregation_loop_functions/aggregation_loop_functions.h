@@ -1,5 +1,5 @@
-#ifndef AGGREGATION_LOOP_FUNCTIONS 
-#define AGGREGATION_LOOP_FUNCTIONS
+#ifndef AGGREGATION_LOOP_FUNCTIONS_H
+#define AGGREGATION_LOOP_FUNCTIONS_H
 
 #include <argos3/core/simulator/loop_functions.h>
 #include <argos3/core/simulator/entity/floor_entity.h>
@@ -28,4 +28,4 @@ private:
 
 
 
-#endif //#ifndef AGGREGATION_LOOP_FUNCTIONS 
+#endif //#ifndef AGGREGATION_LOOP_FUNCTIONS_H 

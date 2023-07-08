@@ -1,4 +1,8 @@
 #include "aggregation_loop_functions.h"
+#include <argos3/core/simulator/simulator.h>
+#include <argos3/core/utility/configuration/argos_configuration.h>
+#include <argos3/plugins/robots/foot-bot/simulator/footbot_entity.h>
+#include <controllers/footbot_foraging/footbot_foraging.h>
 
 CAggregationLoopFunctions::CAggregationLoopFunctions(){}
 
@@ -22,3 +26,4 @@ void CAggregationLoopFunctions::Init(argos::TConfigurationNode& t_node)
     file_stream_.open(some_string_,std::ios_base::trunc | std::ios_base::out);
     file_stream_ << "This is test" << std::endl;
 }
+REGISTER_LOOP_FUNCTIONS(CAggregationLoopFunctions, "aggregation_loop_functions")
