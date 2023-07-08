@@ -37,6 +37,9 @@
     </footbot_aggregation_one>
 
   </controllers>
+  <loop_functions library="build/loop_functions/aggregation_loop_functions/libaggregation_loop_functions"
+                  label="aggregation_loop_functions">
+  </loop_functions>
   <!-- I have discovered an issue where my program crashes with a segfault core dump if all the RAB sensor are disconnected-->
   <!-- *********************** -->
   <!-- * Arena configuration * -->
@@ -61,7 +64,7 @@
     <distribute>
       <position method="uniform" min="-4,-4,0" max="4,4,0" />
       <orientation method="uniform" min="0,0,0" max="360,0,0" />
-      <entity quantity="300" max_trials="100">
+      <entity quantity="5" max_trials="100">
         <foot-bot id="fb">
           <controller config="fao" />
         </foot-bot>
@@ -70,8 +73,8 @@
     
     <floor 
         id="floor"
-        source="image"
-        path="experiments/images/TopLeft.png" 
+        source="loop_functions"
+        pixels_per_meter="50" />
     />
 
   </arena>

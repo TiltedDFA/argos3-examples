@@ -7,21 +7,21 @@
 #include <argos3/core/utility/math/rng.h>
 
 
-class CAggregationLoopFunctions : public argos::CLoopFunctions
+class CAggregationLoopFunctions : public argos::CLoopFunctions 
 {
 public:
     CAggregationLoopFunctions();
     virtual ~CAggregationLoopFunctions();
 
-    virtual void Init(TConfigurationNode& t_node);
-    virtual CColor GetFloorColor(const CVector2& c_position_on_plane);
+    virtual void Init(argos::TConfigurationNode& t_node);
+    virtual argos::CColor GetFloorColor(const argos::CVector2& c_position_on_plane);
     virtual void Reset();
     virtual void Destroy();
     virtual void PreStep();
 private:
     std::string some_string_;
     std::ofstream file_stream_;
-}
+};
 
 
 

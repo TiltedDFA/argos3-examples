@@ -2,16 +2,17 @@
 
 CAggregationLoopFunctions::CAggregationLoopFunctions(){}
 
-CColor CAggregationLoopFunctions::GetFloorColor(const CVector2& c_position_on_plane) {
+argos::CColor CAggregationLoopFunctions::GetFloorColor(const argos::CVector2& c_position_on_plane) 
+{
    if(c_position_on_plane.GetX() < -1.0f) {
-      return CColor::GRAY50;
+      return argos::CColor::GRAY50;
    }
-   for(UInt32 i = 0; i < m_cFoodPos.size(); ++i) {
-      if((c_position_on_plane - m_cFoodPos[i]).SquareLength() < m_fFoodSquareRadius) {
-         return CColor::BLACK;
-      }
-   }
-   return CColor::WHITE;
+//    for(argos::UInt32 i = 0; i < m_cFoodPos.size(); ++i) {
+//       if((c_position_on_plane - m_cFoodPos[i]).SquareLength() < m_fFoodSquareRadius) {
+//          return argos::CColor::BLACK;
+//       }
+//    }
+   return argos::CColor::WHITE;
 }
 
 void CAggregationLoopFunctions::Init(argos::TConfigurationNode& t_node)
