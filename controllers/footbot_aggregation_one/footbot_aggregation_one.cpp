@@ -61,7 +61,7 @@ CHopCountManager::CHopCountManager(bool forgetting_allowed, uint16_t hopcount_ma
       current_hop_count_(hopcount_max),
       currently_forgetting_(false){}
 
-bool CHopCountManager::update()
+bool CHopCountManager::Update()
 {
    if (!forgetting_enabled_)
    {
@@ -90,7 +90,7 @@ bool CHopCountManager::update()
    ++current_hop_count_;
    return true;
 }
-
+void CHopCountManager::ResetHopCount()                                  {current_hop_count_ = max_hop_count_;}
 void CHopCountManager::SetMaxHopCount(uint16_t max_hc)                  {max_hop_count_ = max_hc;}
 
 void CHopCountManager::SetCurrentHopCount(uint16_t hc)                  {current_hop_count_ = hc;}
@@ -213,7 +213,7 @@ bool CFootBotAggregationOne::AvoidCollisions()
 
 bool CFootBotAggregationOne::HandleForgetting()
 {
-   if(hop_count_.update())
+   if(hop_count_.Update())
    {
       rotation_handler_.NonZeroRotateTo(rng_angle_(rng_));
       return true;
@@ -307,5 +307,8 @@ std::string CFootBotAggregationOne::GetHopCount()
 {
    return std::to_string(hop_count_.GetCurrentHopCount());
 }
-
+void CFootBotAggregationOne::ResetHopCount()
+{
+   hop_count_.ResetHopCount();
+}
 REGISTER_CONTROLLER(CFootBotAggregationOne, "footbot_aggregation_one")

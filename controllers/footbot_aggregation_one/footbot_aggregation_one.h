@@ -62,13 +62,13 @@ private:
  * @class CHopCountManager
  * @brief This class is used to handle hop count and "forgetting".
  * This class is used to handle the robot's current hop count and "forgetting". The main method of
- * this class is update(). If forgetting is disabled in the XML file then it will do nothing. If 
+ * this class is Update(). If forgetting is disabled in the XML file then it will do nothing. If 
  * forgetting is enabled then it will decrease the value of forget_tp_counter_(a variable used to
  * track when to activate forgetting). The inital value of forget_tp_counter is forgetting_tp
  * which is the time period in frames of when to activate forget. When the value of forget_tp_counter
  * is zero then it will set the state of currently_forgetting_ to true. In the comming time steps the 
- * update method will increase the value of current_hop_count_, if current_hop_count_ is less than 
- * max_hop_count_. When current_hop_count_'s value is the same as max_hop_count_ the update method
+ * Update method will increase the value of current_hop_count_, if current_hop_count_ is less than 
+ * max_hop_count_. When current_hop_count_'s value is the same as max_hop_count_ the Update method
  * will then set the state of currently_forgetting_ to false and it will reset the forget_tp_counter_
  * to the value of forgetting_tp_.
  */
@@ -78,7 +78,8 @@ public:
    CHopCountManager()=delete;
    explicit CHopCountManager(bool forgetting_enabled,uint16_t hop_count_max,uint16_t forgetting_tp);
 
-   bool update();
+   bool Update();
+   void ResetHopCount();
 
    void SetMaxHopCount(uint16_t max_hc);
    void SetCurrentHopCount(uint16_t hc);
@@ -107,7 +108,8 @@ public:
    virtual void Reset() {}
    virtual void Destroy() {}
    std::string GetHopCount();
-   
+   void ResetHopCount();
+
 private:
    void RealTimeRotate(const argos::CRadians& avg_bearing);
    void TransmitHCData();
