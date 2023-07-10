@@ -11,7 +11,7 @@ class CAggregationLoopFunctions : public argos::CLoopFunctions
 {
 public:
     CAggregationLoopFunctions();
-    virtual ~CAggregationLoopFunctions();
+    virtual ~CAggregationLoopFunctions(){};
 
     virtual void Init(argos::TConfigurationNode& t_node);
     virtual argos::CColor GetFloorColor(const argos::CVector2& c_position_on_plane);

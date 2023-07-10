@@ -6,6 +6,14 @@
 
 CAggregationLoopFunctions::CAggregationLoopFunctions(){}
 
+
+void CAggregationLoopFunctions::Init(argos::TConfigurationNode& t_node)
+{
+    argos::TConfigurationNode& aggregation_node = argos::GetNode(t_node, "aggregation");
+    argos::GetNodeAttribute(aggregation_node,"file_name", some_string_);
+    file_stream_.open(some_string_,std::ios_base::trunc | std::ios_base::out);
+    file_stream_ << "This is test" << std::endl;
+}
 argos::CColor CAggregationLoopFunctions::GetFloorColor(const argos::CVector2& c_position_on_plane) 
 {
    if(c_position_on_plane.GetX() < -1.0f) {
@@ -18,12 +26,7 @@ argos::CColor CAggregationLoopFunctions::GetFloorColor(const argos::CVector2& c_
 //    }
    return argos::CColor::WHITE;
 }
-
-void CAggregationLoopFunctions::Init(argos::TConfigurationNode& t_node)
-{
-    argos::TConfigurationNode& aggregation_node = argos::GetNode(t_node, "aggregation");
-    argos::GetNodeAttribute(aggregation_node,"file_name", some_string_);
-    file_stream_.open(some_string_,std::ios_base::trunc | std::ios_base::out);
-    file_stream_ << "This is test" << std::endl;
-}
+void CAggregationLoopFunctions::Reset(){}
+void CAggregationLoopFunctions::Destroy(){}
+void CAggregationLoopFunctions::PreStep(){}
 REGISTER_LOOP_FUNCTIONS(CAggregationLoopFunctions, "aggregation_loop_functions")

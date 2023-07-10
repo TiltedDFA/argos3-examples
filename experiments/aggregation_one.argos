@@ -26,21 +26,23 @@
         <range_and_bearing implementation="medium" medium="rab" show_rays="true"/>
         <footbot_motor_ground implementation="rot_z_only" />
       </sensors>
-     <params
+     <params>
         Velocity="5" 
         Delta="0.1" 
         Alpha="10" 
         HopCountMax="99"
         ForgettingAllowed="true"
         ForgettingTimePeriod="1000"
-      />  
+      </params>  
     </footbot_aggregation_one>
 
   </controllers>
   <loop_functions library="build/loop_functions/aggregation_loop_functions/libaggregation_loop_functions"
                   label="aggregation_loop_functions">
+    <aggregation
+      file_name="Aggregation.txt"
+    />
   </loop_functions>
-  <!-- I have discovered an issue where my program crashes with a segfault core dump if all the RAB sensor are disconnected-->
   <!-- *********************** -->
   <!-- * Arena configuration * -->
   <!-- *********************** -->
@@ -75,7 +77,6 @@
         id="floor"
         source="loop_functions"
         pixels_per_meter="50" />
-    />
 
   </arena>
 
@@ -101,15 +102,12 @@
   <!-- ****************** -->
   <visualization>
     <qt-opengl>
-      <user_functions library="build/loop_functions/aggregation_loop_functions/libaggregation_user_functions"
-                      label="aggregation_user_function" />
-
       <camera>
         <placements>
           <placement index="0" position="0,0,8.14689" look_at="0,0,0" up="1,0,0" lens_focal_length="65" />
         </placements>
       </camera>
+      <user_functions label="aggregation_user_function" />
     </qt-opengl>
   </visualization>
-
 </argos-configuration>
