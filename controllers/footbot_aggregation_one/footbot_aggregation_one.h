@@ -90,6 +90,7 @@ public:
    uint16_t GetCurrentHopCount()const;
    uint16_t GetForgettingTimePeriod()const;
    bool GetForgettingEnabled()const;
+   bool GetCurrentlyForgetting()const;
 
 private:
    bool forgetting_enabled_;
@@ -107,7 +108,10 @@ public:
    virtual void ControlStep();
    virtual void Reset() {}
    virtual void Destroy() {}
-   std::string GetHopCount();
+   std::string GetHopCount()const;
+   std::string GetNumConnections()const;
+   std::string GetWithinAreaState()const;
+   std::string GetForgettingState()const;
    void ResetHopCount();
 
 private:
@@ -144,6 +148,10 @@ private:
    //Other internal variables
    CHopCountManager hop_count_;
    CRotationHandler rotation_handler_;
+   
+   //Variable for tracking info to output to the LOG file
+   uint64_t num_connections_;
+   bool within_secondary_area_;
 };
 
 #endif

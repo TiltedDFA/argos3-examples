@@ -107,6 +107,8 @@ uint16_t CHopCountManager::GetForgettingTimePeriod()const               {return 
 
 bool CHopCountManager::GetForgettingEnabled()const                      {return forgetting_enabled_;}
 
+bool CHopCountManager::GetCurrentlyForgetting()const                    {return currently_forgetting_;}
+
 CFootBotAggregationOne::CFootBotAggregationOne() 
     : wheels_(NULL),
       proximity_sen_(NULL),
@@ -116,7 +118,9 @@ CFootBotAggregationOne::CFootBotAggregationOne()
       delta_(0.5f),
       alpha_(10.0f),
       hop_count_(true,99,1000),
-      rotation_handler_(wheel_velocity_){}
+      rotation_handler_(wheel_velocity_),
+      num_connections_(0),
+      within_secondary_area_(false){}
 
 void CFootBotAggregationOne::Init(argos::TConfigurationNode &t_node)
 {
@@ -226,6 +230,7 @@ bool CFootBotAggregationOne::HandleTargetArea()
 {
    const argos::CCI_FootBotMotorGroundSensor::TReadings& gnd_sen_readings = ground_sensor_->GetReadings();
 
+   within_secondary_area_ = (gnd_sen_readings[0].Value <= 0.5 || gnd_sen_readings[1].Value <= 0.5 || gnd_sen_readings[2].Value <= 0.5 || gnd_sen_readings[3].Value <= 0.5);
    if(gnd_sen_readings[0].Value < 0.1 || gnd_sen_readings[1].Value < 0.1 || gnd_sen_readings[2].Value < 0.1 || gnd_sen_readings[3].Value < 0.1)
    {
       hop_count_.SetCurrentHopCount(0);
@@ -242,8 +247,10 @@ bool CFootBotAggregationOne::ReadTransmissions()
    if(rnb_readings.empty()) {return false;}
 
    uint16_t min_hop_count{hop_count_.GetMaxHopCount()}; 
+   
+   num_connections_ = rnb_readings.size();
 
-   for(std::size_t i = 0;i < rnb_readings.size();++i)
+   for(std::size_t i = 0;i < num_connections_;++i)
    {
       if(rnb_readings[i].Data[0] < min_hop_count) min_hop_count = rnb_readings[i].Data[0];
    }
@@ -303,9 +310,21 @@ void CFootBotAggregationOne::ControlStep()
    MoveForward();
 }
 
-std::string CFootBotAggregationOne::GetHopCount()
+std::string CFootBotAggregationOne::GetHopCount()const
 {
    return std::to_string(hop_count_.GetCurrentHopCount());
+}
+std::string CFootBotAggregationOne::GetNumConnections()const
+{
+   return std::to_string(num_connections_);
+}
+std::string CFootBotAggregationOne::GetWithinAreaState()const
+{
+   return within_secondary_area_ ? "true" : "false";
+}
+std::string CFootBotAggregationOne::GetForgettingState()const
+{
+   return hop_count_.GetCurrentlyForgetting() ? "true" : "false";
 }
 void CFootBotAggregationOne::ResetHopCount()
 {

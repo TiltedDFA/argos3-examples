@@ -40,9 +40,11 @@
   <loop_functions library="build/loop_functions/aggregation_loop_functions/libaggregation_loop_functions"
                   label="aggregation_loop_functions">
     <aggregation
-      file_name="Aggregation.txt"
+      file_name="aggregation.txt"
       num_target_areas="2"
       target_area_size="0.3"
+      secondary_area_offset="0.2"
+      log_as_csv="true"
     />
   </loop_functions>
   <!-- *********************** -->
