@@ -6,6 +6,8 @@
 #include <random>
 #include <cmath>
 
+static const char* first_line_file = "";
+
 TargetArea::TargetArea(const argos::CVector2& area_center, argos::Real area_radius): 
          area_center_(area_center),
          area_radius_(area_radius){}
@@ -30,7 +32,7 @@ void CAggregationLoopFunctions::Init(argos::TConfigurationNode& t_node)
    argos::GetNodeAttribute(aggregation_node,"target_area_size", target_area_radius);
 
    file_stream_.open(some_string_,std::ios_base::trunc | std::ios_base::out);
-   file_stream_ << "This is test" << std::endl;
+   file_stream_ << first_line_file << std::endl;
 
    const argos::CRange<argos::CVector3> arena_limits = GetSpace().GetArenaLimits();
    std::uniform_real_distribution<> random_x_coord{arena_limits.GetMin().GetX(),arena_limits.GetMax().GetX()};
@@ -54,13 +56,26 @@ argos::CColor CAggregationLoopFunctions::GetFloorColor(const argos::CVector2& c_
 }
 void CAggregationLoopFunctions::Reset()
 {
-   // std::map<std::string, argos::CAny, std::less<std::string>> bots = GetSpace().GetEntitiesByType("foot-bot");
-   // for(auto& [key,value] : bots)
-   // {
-   //    CFootBotEntity* val = any_cast<CFootBotEntity*>(value);
-   //    dynamic_cast<CFootBotAggregationOne*>(val)->ResetHopCount();
-   // }
+   file_stream_.close();
+   file_stream_.open(some_string_,std::ios_base::trunc | std::ios_base::out);
+   file_stream_ << first_line_file << std::endl;
+   std::map<std::string, argos::CAny, std::less<std::string>> bots = GetSpace().GetEntitiesByType("foot-bot");
+   for(auto& [key,value] : bots)
+   {
+      CFootBotEntity& val = *any_cast<CFootBotEntity*>(value);
+      dynamic_cast<CFootBotAggregationOne&>
+         (val.GetControllableEntity().GetController())
+            .ResetHopCount();
+      
+   }
 }
-void CAggregationLoopFunctions::Destroy(){}
-void CAggregationLoopFunctions::PreStep(){}
+void CAggregationLoopFunctions::Destroy()
+{
+   file_stream_.close();
+}
+void CAggregationLoopFunctions::PreStep()
+{
+   file_stream_   << GetSpace().GetSimulationClock() << "\t";
+                  
+}
 REGISTER_LOOP_FUNCTIONS(CAggregationLoopFunctions, "aggregation_loop_functions")
