@@ -41,10 +41,11 @@
                   label="aggregation_loop_functions">
     <aggregation
       file_name="aggregation.txt"
+      log_as_csv="true"
+      default_area_config="true"
       num_target_areas="2"
       target_area_size="0.3"
       secondary_area_offset="0.2"
-      log_as_csv="true"
     />
   </loop_functions>
   <!-- *********************** -->
@@ -80,7 +81,7 @@
     <floor 
         id="floor"
         source="loop_functions"
-        pixels_per_meter="100" />
+        pixels_per_meter="1000" />
   </arena>
 
   <!-- ******************* -->

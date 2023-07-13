@@ -32,29 +32,49 @@ void CAggregationLoopFunctions::Init(argos::TConfigurationNode& t_node)
    uint64_t num_target_areas{0};
    argos::Real target_area_radius{0};
    argos::Real secondary_area_offset{0};
+   bool default_area_config{false};
 
    argos::TConfigurationNode& aggregation_node = argos::GetNode(t_node, "aggregation");
    argos::GetNodeAttribute(aggregation_node,"file_name", file_name_);
+   argos::GetNodeAttribute(aggregation_node,"log_as_csv",file_out_in_csv_);
+   argos::GetNodeAttribute(aggregation_node,"default_area_config",default_area_config);
    argos::GetNodeAttribute(aggregation_node,"num_target_areas", num_target_areas);
    argos::GetNodeAttribute(aggregation_node,"target_area_size", target_area_radius);
    argos::GetNodeAttribute(aggregation_node,"secondary_area_offset", secondary_area_offset);
-   argos::GetNodeAttribute(aggregation_node,"log_as_csv",file_out_in_csv_);
 
    file_stream_.open(file_name_,std::ios_base::trunc | std::ios_base::out);
    if(!file_out_in_csv_) file_stream_ << first_line_file << std::endl;
 
    const argos::CRange<argos::CVector3> arena_limits = GetSpace().GetArenaLimits();
-   std::uniform_real_distribution<> random_x_coord{arena_limits.GetMin().GetX(),arena_limits.GetMax().GetX()};
-   std::uniform_real_distribution<> random_y_coord{arena_limits.GetMin().GetY(),arena_limits.GetMax().GetY()}; 
-   
-   for(uint64_t i{0}; i < num_target_areas;++i)
+   const argos::CVector3 arena_center = GetSpace().GetArenaCenter();
+   const auto arena_size = GetSpace().GetArenaSize();
+   if(default_area_config)
    {
       target_areas_.emplace_back(
-         argos::CVector2(
-            static_cast<argos::Real>(random_x_coord(rng_)),
-            static_cast<argos::Real>(random_y_coord(rng_))),
-         target_area_radius,
-         secondary_area_offset);
+         argos::CVector2(arena_center.GetX(), arena_center.GetY() - arena_size.GetY()/2.5),
+         arena_size.GetX()/25,
+         (arena_size.GetX()/25)
+         );
+      target_areas_.emplace_back(
+         argos::CVector2(arena_center.GetX(), arena_center.GetY() + arena_size.GetY()/2.5),
+         arena_size.GetX()/25,
+         (arena_size.GetX()/25)
+         );
+   }
+   else
+   {
+      std::uniform_real_distribution<> random_x_coord{arena_limits.GetMin().GetX(),arena_limits.GetMax().GetX()};
+      std::uniform_real_distribution<> random_y_coord{arena_limits.GetMin().GetY(),arena_limits.GetMax().GetY()}; 
+      
+      for(uint64_t i{0}; i < num_target_areas;++i)
+      {
+         target_areas_.emplace_back(
+            argos::CVector2(
+               static_cast<argos::Real>(random_x_coord(rng_)),
+               static_cast<argos::Real>(random_y_coord(rng_))),
+            target_area_radius,
+            secondary_area_offset);
+      }
    }
 
    const auto bots = GetSpace().GetEntitiesByType("foot-bot");
