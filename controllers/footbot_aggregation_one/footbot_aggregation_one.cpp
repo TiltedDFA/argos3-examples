@@ -219,7 +219,7 @@ bool CFootBotAggregationOne::HandleForgetting()
 {
    if(hop_count_.Update())
    {
-      rotation_handler_.NonZeroRotateTo(rng_angle_(rng_));
+      rotation_handler_.NonZeroRotateTo(rnd_gen->Uniform(rng_val_range));
       return true;
    }
 
@@ -234,7 +234,7 @@ bool CFootBotAggregationOne::HandleTargetArea()
    if(gnd_sen_readings[0].Value < 0.1 || gnd_sen_readings[1].Value < 0.1 || gnd_sen_readings[2].Value < 0.1 || gnd_sen_readings[3].Value < 0.1)
    {
       hop_count_.SetCurrentHopCount(0);
-      rotation_handler_.NonZeroRotateTo(rng_angle_(rng_));
+      rotation_handler_.NonZeroRotateTo(rnd_gen->Uniform(rng_val_range));
       return true;
    }
    return false;

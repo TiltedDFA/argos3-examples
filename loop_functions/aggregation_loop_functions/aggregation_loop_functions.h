@@ -37,7 +37,7 @@ public:
     virtual void Destroy();
     virtual void PreStep();
 public:
-    inline static std::mt19937 rng_{std::random_device{}()};
+    inline static argos::CRandom::CRNG* rnd_gen{argos::CRandom::CreateRNG("argos")};
 private:
     std::string file_name_;
     std::ofstream file_stream_;

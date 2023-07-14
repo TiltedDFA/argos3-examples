@@ -63,15 +63,14 @@ void CAggregationLoopFunctions::Init(argos::TConfigurationNode& t_node)
    }
    else
    {
-      std::uniform_real_distribution<> random_x_coord{arena_limits.GetMin().GetX(),arena_limits.GetMax().GetX()};
-      std::uniform_real_distribution<> random_y_coord{arena_limits.GetMin().GetY(),arena_limits.GetMax().GetY()}; 
-      
+      argos::CRange<argos::Real> random_x_coord{arena_limits.GetMin().GetX(),arena_limits.GetMax().GetX()};
+      argos::CRange<argos::Real> random_y_coord{arena_limits.GetMin().GetY(),arena_limits.GetMax().GetY()};
       for(uint64_t i{0}; i < num_target_areas;++i)
       {
          target_areas_.emplace_back(
             argos::CVector2(
-               static_cast<argos::Real>(random_x_coord(rng_)),
-               static_cast<argos::Real>(random_y_coord(rng_))),
+               static_cast<argos::Real>(rnd_gen->Uniform(random_x_coord)),
+               static_cast<argos::Real>(rnd_gen->Uniform(random_y_coord))),
             target_area_radius,
             secondary_area_offset);
       }

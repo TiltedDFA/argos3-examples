@@ -8,7 +8,7 @@
     <system threads="0" />
     <experiment length="0"
                 ticks_per_second="10"
-                random_seed="0" />
+                random_seed="10" />
   </framework>
   <!-- random seed was 124 -->
   <!-- *************** -->
@@ -42,7 +42,7 @@
     <aggregation
       file_name="aggregation.txt"
       log_as_csv="true"
-      default_area_config="true"
+      default_area_config="false"
       num_target_areas="2"
       target_area_size="0.3"
       secondary_area_offset="0.2"

@@ -22,7 +22,7 @@
 #include <argos3/plugins/robots/generic/control_interface/ci_range_and_bearing_actuator.h>
 #include <argos3/plugins/robots/generic/control_interface/ci_range_and_bearing_sensor.h>
 #include <argos3/plugins/robots/foot-bot/control_interface/ci_footbot_motor_ground_sensor.h>
-#include <random>
+#include <argos3/core/utility/math/rng.h>
 #include <string>
 
 /**
@@ -126,10 +126,10 @@ private:
 
 public:
    //threadsafe random number generator
-   inline static std::mt19937 rng_{std::random_device{}()};
+   inline static argos::CRandom::CRNG* rnd_gen{argos::CRandom::CreateRNG("argos")};
    
    //will be used to generate a random direction for the robots rotate to
-   inline static std::uniform_int_distribution<int16_t> rng_angle_{-180,180};
+   inline static const argos::CRange<argos::Real> rng_val_range{-180.0,180.0};
 
 private:
    //robot components
