@@ -93,12 +93,12 @@ public:
    bool GetCurrentlyForgetting()const;
 
 private:
-   bool forgetting_enabled_;
+   bool     forgetting_enabled_;
    uint16_t forgetting_tp_;
    uint16_t max_hop_count_;
    uint16_t forget_tp_counter_;
    uint16_t current_hop_count_;
-   bool currently_forgetting_;
+   bool     currently_forgetting_;
 };
 class CFootBotAggregationOne : public argos::CCI_Controller 
 {
@@ -125,11 +125,8 @@ private:
    void MoveForward();
 
 public:
-   //threadsafe random number generator
-   inline static argos::CRandom::CRNG* rnd_gen{argos::CRandom::CreateRNG("argos")};
-   
-   //will be used to generate a random direction for the robots rotate to
-   inline static const argos::CRange<argos::Real> rng_val_range{-180.0,180.0};
+   inline static argos::CRandom::CRNG*             rnd_gen{argos::CRandom::CreateRNG("argos")};
+   inline static const argos::CRange<argos::Real>  rng_val_range{-180.0,180.0};
 
 private:
    //robot components
@@ -151,7 +148,7 @@ private:
    
    //Variable for tracking info to output to the LOG file
    uint64_t num_connections_;
-   bool within_secondary_area_;
+   bool     within_secondary_area_;
 };
 
 #endif
