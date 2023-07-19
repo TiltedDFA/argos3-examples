@@ -11,8 +11,8 @@ OG_XML_LOCATION     = "experiments/aggregation_one.argos"
 PATH_TO_WORKING_DIR = "/home/malik/Documents/argos3-examples"
 XML_OUT_PREFIX      = "agg_"
 CSV_OUT_PREFIX      = "dat_"
-NUM_RUNS            = 10    #current works as a delta for the random seed 
-EXPERMIMENT_LENGTH  = 2     #in seconds 
+NUM_RUNS            = 1    #current works as a delta for the random seed 
+EXPERMIMENT_LENGTH  = 20     #in seconds 
 TICKS_STEPS_PER_SEC = "10"  
 POST_EXPERIMENT_WAIT= 1     #also in seconds(used to account for argos start up time)
 NUM_BOTS            = (7,)  #can set mulitple. will rerun experiments with same 
@@ -25,6 +25,10 @@ EP_ALPHA            = "10"
 EP_HCMAX            = "99"
 EP_FORGETTING_ON    = "true"
 EP_FORGETTING_TIMEP = "1000"
+LF_DEFAULT_TRGT_AREA= "false"
+LF_NUM_TARGET_AREAS = "2"
+LF_AREA_SIZE        = "0.3"
+LF_SECONDARY_AREA_OFFSET = "0.2"
 
 #variables
 current_xml_num     = 1
@@ -52,9 +56,11 @@ root = tree.getroot()
 
 entity_node     = root.find('arena').find('distribute').find('entity')
 
-experiment_node   = root.find('framework').find('experiment')
+experiment_node = root.find('framework').find('experiment')
 
 fb_params_node  = root.find('controllers').find('footbot_aggregation_one').find('params')
+
+loop_fun_params = root.find('loop_functions').find('aggregation')
 
 #setting up experiment params
 fb_params_node.set('Velocity',EP_VELOCITY)
@@ -70,6 +76,18 @@ fb_params_node.set('ForgettingAllowed',EP_FORGETTING_ON)
 fb_params_node.set('ForgettingTimePeriod', EP_FORGETTING_TIMEP)
 
 experiment_node.set('ticks_per_second',TICKS_STEPS_PER_SEC)
+
+loop_fun_params.set('log_as_csv', 'true')
+
+loop_fun_params.set('file_name', CSV_IN_FILE_NAME)
+
+loop_fun_params.set('default_area_config', LF_DEFAULT_TRGT_AREA)
+
+loop_fun_params.set('num_target_areas', LF_NUM_TARGET_AREAS)
+
+loop_fun_params.set('target_area_size', LF_AREA_SIZE)
+
+loop_fun_params.set('secondary_area_offset', LF_SECONDARY_AREA_OFFSET)
 
 #creating desired test files
 sys.chdir(XML_OUT_DIR)
@@ -108,3 +126,4 @@ for i in range(0,len(created_xml_files)):
 
     copier.copyfile(original,target)
 
+print("Successfully finished")

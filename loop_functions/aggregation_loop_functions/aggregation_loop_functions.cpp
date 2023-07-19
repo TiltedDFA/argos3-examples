@@ -117,7 +117,7 @@ void CAggregationLoopFunctions::PreStep()
                         << ctrlr.GetHopCount()              << ','
                         << ctrlr.GetForgettingState()       << ','
                         << ctrlr.GetNumConnections()        << ',' 
-                        << ctrlr.GetWithinAreaState()       << std::endl;
+                        << GetZone(ctrlr.GetPosition())     << std::endl;
       }
    }
    else
@@ -130,8 +130,16 @@ void CAggregationLoopFunctions::PreStep()
                         << ctrlr.GetHopCount()              << "\t\t\t"
                         << ctrlr.GetForgettingState()       << "\t\t\t\t"
                         << ctrlr.GetNumConnections()        << "\t\t\t\t" 
-                        << ctrlr.GetWithinAreaState()       << std::endl;
+                        << GetZone(ctrlr.GetPosition())     << std::endl;
       }            
    }
+}
+uint64_t CAggregationLoopFunctions::GetZone(argos::CVector3 position)
+{
+   for(uint64_t i = 1; i < target_areas_.size()+1;++i)
+   { 
+      if(target_areas_[i-1].PointWithinTargetArea(argos::CVector2(position.GetX(),position.GetY()))) return i; 
+   }
+   return 0;
 }
 REGISTER_LOOP_FUNCTIONS(CAggregationLoopFunctions, "aggregation_loop_functions")

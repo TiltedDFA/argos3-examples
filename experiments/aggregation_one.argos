@@ -25,6 +25,7 @@
         <footbot_proximity implementation="default" show_rays="true" />
         <range_and_bearing implementation="medium" medium="rab" show_rays="true"/>
         <footbot_motor_ground implementation="rot_z_only" />
+        <positioning implementation="default" />
       </sensors>
      <params
         Velocity="5" 
@@ -41,7 +42,7 @@
                   label="aggregation_loop_functions">
     <aggregation
       file_name="aggregation.txt"
-      log_as_csv="true"
+      log_as_csv="false"
       default_area_config="false"
       num_target_areas="2"
       target_area_size="0.3"

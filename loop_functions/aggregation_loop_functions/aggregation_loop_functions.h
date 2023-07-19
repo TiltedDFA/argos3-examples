@@ -39,6 +39,8 @@ public:
 public:
     inline static argos::CRandom::CRNG* rnd_gen{argos::CRandom::CreateRNG("argos")};
 private:
+    uint64_t GetZone(argos::CVector3 position);
+private:
     std::string file_name_;
     std::ofstream file_stream_;
     std::vector<TargetArea> target_areas_;

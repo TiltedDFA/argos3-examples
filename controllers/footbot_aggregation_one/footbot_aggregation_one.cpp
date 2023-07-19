@@ -114,6 +114,7 @@ CFootBotAggregationOne::CFootBotAggregationOne()
       proximity_sen_(NULL),
       rnb_actuator_(NULL),
       rnb_sensor_(NULL),
+      position_sensor_(NULL),
       wheel_velocity_(2.5f),
       delta_(0.5f),
       alpha_(10.0f),
@@ -129,6 +130,7 @@ void CFootBotAggregationOne::Init(argos::TConfigurationNode &t_node)
    proximity_sen_ = GetSensor<   argos::CCI_FootBotProximitySensor      >("footbot_proximity");
    rnb_sensor_    = GetSensor<   argos::CCI_RangeAndBearingSensor       >("range_and_bearing");
    ground_sensor_ = GetSensor<   argos::CCI_FootBotMotorGroundSensor    >("footbot_motor_ground" );
+   position_sensor_=GetSensor<   argos::CCI_PositioningSensor           >("positioning");
 
    uint16_t xml_max_hop_count{0};
    bool xml_forgetting_allowed{false};
@@ -186,7 +188,10 @@ bool CFootBotAggregationOne::HandleTurning()
 
    return true;
 }
-
+argos::CVector3 CFootBotAggregationOne::GetPosition()const
+{
+   return position_sensor_->GetReading().Position;
+}
 bool CFootBotAggregationOne::AvoidCollisions()
 {
    auto readings = proximity_sen_->GetReadings();
