@@ -25,5 +25,6 @@ for key in file_data:
 plt.plot(l1,l2)
 
 plt.show()
-
+#should have method to save image
+#max med 1st 3rd percentile
 print(len(file_data))
