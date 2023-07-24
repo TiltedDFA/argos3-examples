@@ -27,14 +27,16 @@ EP_ALPHA            = "10"
 EP_HCMAX            = "99"
 EP_FORGETTING_ON    = "true"
 EP_FORGETTING_TIMEP = "1000"
-EP_PACKET_DROP_PROB = "0.5"
-EP_NOISE_STD_DEV    = "0.5"
 LF_DEFAULT_TRGT_AREA= "false"
 LF_NUM_TARGET_AREAS = "2"
 LF_AREA_SIZE        = "0.3"
 LF_SECONDARY_AREA_OFFSET = "0.2"
 NUM_PROCESSES = 16
-
+#COM FAULTS
+EP_PACKET_DROP_PROB         = "0.5"
+EP_NOISE_STD_DEV            = "0.5"
+EP_DELAYED_TRANMISSION_PROB = "0"
+EP_TIME_STEPS_PER_DELAY     = "0"
 
 def RunArgos(file_name:str, num:int, csv_name:str):
     sys.chdir(PATH_TO_WORKING_DIR)
@@ -100,10 +102,6 @@ if __name__ == "__main__":
 
     experiment_node.set('ticks_per_second',TICKS_STEPS_PER_SEC)
 
-    rnb_node.set('packet_drop_prob', EP_PACKET_DROP_PROB)
-
-    rnb_node.set('noise_std_dev', EP_NOISE_STD_DEV)
-
     loop_fun_params.set('log_as_csv', 'true')
 
     loop_fun_params.set('file_name', CSV_IN_FILE_NAME)
@@ -115,6 +113,14 @@ if __name__ == "__main__":
     loop_fun_params.set('target_area_size', LF_AREA_SIZE)
 
     loop_fun_params.set('secondary_area_offset', LF_SECONDARY_AREA_OFFSET)
+
+    rnb_node.set('packet_drop_prob', EP_PACKET_DROP_PROB)
+
+    rnb_node.set('noise_std_dev', EP_NOISE_STD_DEV)
+
+    fb_params_node.set('DelayedTransmittionProb', EP_DELAYED_TRANMISSION_PROB)
+
+    fb_params_node.set('TimeStepsPerDelay', EP_TIME_STEPS_PER_DELAY)
 
     #creating desired test files
     sys.chdir(XML_OUT_DIR)

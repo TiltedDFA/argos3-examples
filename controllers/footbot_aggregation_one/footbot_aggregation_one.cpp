@@ -54,12 +54,12 @@ void CRotationHandler::NonZeroRotateTo(argos::Real desired_turning_angle)
 int8_t CRotationHandler::GetRemainingRotationTime(){return rot_frames_remaining_;}
 
 CHopCountManager::CHopCountManager(bool forgetting_allowed, uint16_t hopcount_max, uint16_t forgetting_tp)
-    : forgetting_enabled_(forgetting_allowed),
-      forgetting_tp_(forgetting_tp),
+    : forgetting_tp_(forgetting_tp),
       max_hop_count_(hopcount_max),
       forget_tp_counter_(0),
       current_hop_count_(hopcount_max),
-      currently_forgetting_(false){}
+      currently_forgetting_(false),
+      forgetting_enabled_(forgetting_allowed){}
 
 bool CHopCountManager::Update()
 {
@@ -90,7 +90,9 @@ bool CHopCountManager::Update()
    ++current_hop_count_;
    return true;
 }
+
 void CHopCountManager::ResetHopCount()                                  {current_hop_count_ = max_hop_count_;}
+
 void CHopCountManager::SetMaxHopCount(uint16_t max_hc)                  {max_hop_count_ = max_hc;}
 
 void CHopCountManager::SetCurrentHopCount(uint16_t hc)                  {current_hop_count_ = hc;}
@@ -113,13 +115,15 @@ CDelayedTransmissionManager::CDelayedTransmissionManager(
                               argos::Real DelayedTransmittionProbability,
                               uint64_t NumTStepsDelay,
                               argos::CRandom::CRNG* rng_):
-   delayed_transmission_data_(),
    rng_ptr_(rng_),
+   enabled_(rng_ptr_->Bernoulli(DelayedTransmittionProbability)),
    time_step_delay_(NumTStepsDelay),
-   enabled_(rng_ptr_->Bernoulli(DelayedTransmittionProbability)){}
+   delayed_transmission_data_(){}
+
 uint16_t CDelayedTransmissionManager::Update(argos::CRandom::CRNG* rng_,uint16_t transmission_data)
 {
    if(!enabled_) return std::numeric_limits<uint16_t>::max();
+
    if(delayed_transmission_data_.size() == time_step_delay_)
    {
       delayed_transmission_data_.push(transmission_data);
@@ -127,13 +131,13 @@ uint16_t CDelayedTransmissionManager::Update(argos::CRandom::CRNG* rng_,uint16_t
       delayed_transmission_data_.pop();
       return rval;
    }
+
    delayed_transmission_data_.push(transmission_data);
    return std::numeric_limits<uint16_t>::max() - 1;
 }
-bool CDelayedTransmissionManager::GetDelayedState()const
-{
-   return enabled_;
-}
+
+bool CDelayedTransmissionManager::GetDelayedState()const{ return enabled_;}
+
 CFootBotAggregationOne::CFootBotAggregationOne() 
     : wheels_(NULL),
       proximity_sen_(NULL),
@@ -182,8 +186,8 @@ void CFootBotAggregationOne::Init(argos::TConfigurationNode &t_node)
    rotation_handler_ = std::move(CRotationHandler(wheel_velocity_));
    rnb_delay_handler_ = std::move(CDelayedTransmissionManager(rnb_delay_prob,time_steps_per_delay,rnd_gen));
 
-   std::cout << GetId() << " has delayed tranmsissions: " << (rnb_delay_handler_.GetDelayedState() ? "enabled" : "disabled") << std::endl;
-}     
+}  
+
 void CFootBotAggregationOne::RealTimeRotate(const argos::CRadians& avg_bearing)
 {
    if(avg_bearing.GetValue() == 0) return;
@@ -235,10 +239,9 @@ bool CFootBotAggregationOne::HandleTurning()
 
    return true;
 }
-argos::CVector3 CFootBotAggregationOne::GetPosition()const
-{
-   return position_sensor_->GetReading().Position;
-}
+
+argos::CVector3 CFootBotAggregationOne::GetPosition()const { return position_sensor_->GetReading().Position; }
+
 bool CFootBotAggregationOne::AvoidCollisions()
 {
    auto readings = proximity_sen_->GetReadings();
@@ -334,10 +337,7 @@ bool CFootBotAggregationOne::ReadTransmissions()
    return false;
 }
 
-void CFootBotAggregationOne::MoveForward()
-{
-   wheels_->SetLinearVelocity(wheel_velocity_, wheel_velocity_);
-}
+void CFootBotAggregationOne::MoveForward() { wheels_->SetLinearVelocity(wheel_velocity_, wheel_velocity_); }
 
 /**
  * The control step and the private functions of CFootBotAggregationOne work with a similar system to interupts.

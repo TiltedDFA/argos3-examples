@@ -96,11 +96,11 @@ public:
    bool GetCurrentlyForgetting()const;
 
 private:
-   bool     forgetting_enabled_;
    uint16_t forgetting_tp_;
    uint16_t max_hop_count_;
    uint16_t forget_tp_counter_;
    uint16_t current_hop_count_;
+   bool     forgetting_enabled_;
    bool     currently_forgetting_;
 };
 class CDelayedTransmissionManager
@@ -108,13 +108,16 @@ class CDelayedTransmissionManager
 public:
    CDelayedTransmissionManager()=delete;
    CDelayedTransmissionManager(argos::Real DelayedTransmittionProbability, uint64_t NumTStepsDelay, argos::CRandom::CRNG* rng_);
+   
    uint16_t Update(argos::CRandom::CRNG* rng_,uint16_t transmission_data);
    bool GetDelayedState()const;
+
 private:
-   std::queue<uint16_t> delayed_transmission_data_;
    argos::CRandom::CRNG* rng_ptr_;
-   uint64_t time_step_delay_;
    bool enabled_;
+   uint64_t time_step_delay_;
+   std::queue<uint16_t> delayed_transmission_data_;
+
 };
 class CFootBotAggregationOne : public argos::CCI_Controller 
 {
