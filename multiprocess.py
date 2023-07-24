@@ -27,6 +27,8 @@ EP_ALPHA            = "10"
 EP_HCMAX            = "99"
 EP_FORGETTING_ON    = "true"
 EP_FORGETTING_TIMEP = "1000"
+EP_PACKET_DROP_PROB = "0.5"
+EP_NOISE_STD_DEV    = "0.5"
 LF_DEFAULT_TRGT_AREA= "false"
 LF_NUM_TARGET_AREAS = "2"
 LF_AREA_SIZE        = "0.3"
@@ -79,6 +81,8 @@ if __name__ == "__main__":
 
     fb_params_node  = root.find('controllers').find('footbot_aggregation_one').find('params')
 
+    rnb_node        = root.find('controllers').find('footbot_aggregation_one').find('sensors').find('range_and_bearing')
+
     loop_fun_params = root.find('loop_functions').find('aggregation')
 
     #setting up experiment params
@@ -95,6 +99,10 @@ if __name__ == "__main__":
     fb_params_node.set('ForgettingTimePeriod', EP_FORGETTING_TIMEP)
 
     experiment_node.set('ticks_per_second',TICKS_STEPS_PER_SEC)
+
+    rnb_node.set('packet_drop_prob', EP_PACKET_DROP_PROB)
+
+    rnb_node.set('noise_std_dev', EP_NOISE_STD_DEV)
 
     loop_fun_params.set('log_as_csv', 'true')
 

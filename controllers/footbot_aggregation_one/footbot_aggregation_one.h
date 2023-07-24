@@ -101,6 +101,17 @@ private:
    uint16_t current_hop_count_;
    bool     currently_forgetting_;
 };
+class CDelayedTransmittionManager
+{
+public:
+   CDelayedTransmittionManager()=delete;
+   CDelayedTransmittionManager(argos::Real DelayedTransmittionProbability,uint64_t NumTStepsDelay);
+   bool Update(argos::CRandom::CRNG* rng_);
+private:
+   argos::Real delayed_transmittion_probability_;
+   uint64_t num_frames_remaining_;
+   uint64_t time_step_delay_;
+};
 class CFootBotAggregationOne : public argos::CCI_Controller 
 {
 public:
@@ -148,7 +159,8 @@ private:
    //Other internal variables
    CHopCountManager hop_count_;
    CRotationHandler rotation_handler_;
-   
+   CDelayedTransmittionManager rnb_delay_handler_;
+
    //Variable for tracking info to output to the LOG file
    uint64_t num_connections_;
    bool     within_secondary_area_;

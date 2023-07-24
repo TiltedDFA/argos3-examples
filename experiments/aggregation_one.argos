@@ -23,7 +23,11 @@
       </actuators>
       <sensors>
         <footbot_proximity implementation="default" show_rays="true" />
-        <range_and_bearing implementation="medium" medium="rab" show_rays="true"/>
+        <range_and_bearing  implementation="medium" 
+                            medium="rab" 
+                            show_rays="true"
+                            packet_drop_prob="0"
+                            noise_std_dev="0"/>
         <footbot_motor_ground implementation="rot_z_only" />
         <positioning implementation="default" />
       </sensors>
@@ -34,6 +38,8 @@
         HopCountMax="99"
         ForgettingAllowed="true"
         ForgettingTimePeriod="1000"
+        DelayedTransmittionProb="0"
+        TimeStepsPerDelay="0"
       />  
     </footbot_aggregation_one>
 

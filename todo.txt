@@ -38,3 +38,10 @@ for DAT1 books:
 *** VanderPlas, J. Python Data Science Handbook: Essential Tools for Working with Data, O’Reilly, 2016.
 
 ** Igual, L. Segui, S. Introduction to Data Science: A Python Approach to Concepts, Techniques and Applications, Springer, 2017
+
+
+Chosen communication faults:
+    -Range and bearing sensor-packet loss
+    -Range and bearing sensor-noise
+    -Range and bearing sensor-delayed transmission
+
