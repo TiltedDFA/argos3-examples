@@ -25,6 +25,8 @@
 #include <argos3/plugins/robots/generic/control_interface/ci_positioning_sensor.h>
 #include <argos3/core/utility/math/rng.h>
 #include <string>
+#include <queue>
+#include <limits>
 
 /**
  * @class CRotationHandler
@@ -101,16 +103,18 @@ private:
    uint16_t current_hop_count_;
    bool     currently_forgetting_;
 };
-class CDelayedTransmittionManager
+class CDelayedTransmissionManager
 {
 public:
-   CDelayedTransmittionManager()=delete;
-   CDelayedTransmittionManager(argos::Real DelayedTransmittionProbability,uint64_t NumTStepsDelay);
-   bool Update(argos::CRandom::CRNG* rng_);
+   CDelayedTransmissionManager()=delete;
+   CDelayedTransmissionManager(argos::Real DelayedTransmittionProbability, uint64_t NumTStepsDelay, argos::CRandom::CRNG* rng_);
+   uint16_t Update(argos::CRandom::CRNG* rng_,uint16_t transmission_data);
+   bool GetDelayedState()const;
 private:
-   argos::Real delayed_transmittion_probability_;
-   uint64_t num_frames_remaining_;
+   std::queue<uint16_t> delayed_transmission_data_;
+   argos::CRandom::CRNG* rng_ptr_;
    uint64_t time_step_delay_;
+   bool enabled_;
 };
 class CFootBotAggregationOne : public argos::CCI_Controller 
 {
@@ -159,7 +163,7 @@ private:
    //Other internal variables
    CHopCountManager hop_count_;
    CRotationHandler rotation_handler_;
-   CDelayedTransmittionManager rnb_delay_handler_;
+   CDelayedTransmissionManager rnb_delay_handler_;
 
    //Variable for tracking info to output to the LOG file
    uint64_t num_connections_;
