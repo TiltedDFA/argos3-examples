@@ -20,7 +20,8 @@ look into simulation communication faults and adding them to the automation scri
 
 alpha alg for aggregation
 
-excel sheet on possible errors. change the xml for errors that can be simulated in the xml. Make new branches on git for errors that would require code changes. Pick 2-3. Make sure to keep possible errors even if not implmanted.
+excel sheet on possible errors. change the xml for errors that can be simulated in the xml. Make new branches on git for errors that would require code changes.
+Pick 2-3. Make sure to keep possible errors even if not implmanted.
 
 start poster on 10th week.
 
@@ -41,7 +42,7 @@ for DAT1 books:
 
 
 Chosen communication faults:
-    -Range and bearing sensor-packet loss
-    -Range and bearing sensor-noise
-    -Range and bearing sensor-delayed transmission
+    -Range and bearing sensor-packet loss -done
+    -Range and bearing sensor-noise -done
+    -Range and bearing sensor-delayed transmission -done
 

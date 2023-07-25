@@ -150,6 +150,7 @@ CFootBotAggregationOne::CFootBotAggregationOne()
       hop_count_(true,99,1000),
       rotation_handler_(wheel_velocity_),
       rnb_delay_handler_(0,1,rnd_gen),
+      stop_when_reach_target_area_(false),
       num_connections_(0),
       within_secondary_area_(false){}
 
@@ -176,7 +177,7 @@ void CFootBotAggregationOne::Init(argos::TConfigurationNode &t_node)
    argos::GetNodeAttributeOrDefault(t_node, "ForgettingTimePeriod", xml_forgetting_time_period, hop_count_.GetForgettingTimePeriod());
    argos::GetNodeAttributeOrDefault(t_node, "DelayedTransmittionProb", rnb_delay_prob, rnb_delay_prob);
    argos::GetNodeAttributeOrDefault(t_node, "TimeStepsPerDelay", time_steps_per_delay, time_steps_per_delay);
-
+   argos::GetNodeAttributeOrDefault(t_node, "StopAfterReachingTargetZone", stop_when_reach_target_area_, stop_when_reach_target_area_);
 
    hop_count_.SetMaxHopCount(xml_max_hop_count);
    hop_count_.SetForgettingEnabled(xml_forgetting_allowed);
@@ -352,6 +353,13 @@ void CFootBotAggregationOne::MoveForward() { wheels_->SetLinearVelocity(wheel_ve
 void CFootBotAggregationOne::ControlStep()
 {
    TransmitHCData();
+
+   if(hop_count_.GetCurrentHopCount() == 0 && stop_when_reach_target_area_) 
+   {
+      wheels_->SetLinearVelocity(0,0);
+      return;
+   }
+   
    if(HandleTurning())return;
 
    if(HandleTargetArea())return;

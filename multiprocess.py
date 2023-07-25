@@ -1,8 +1,9 @@
-import os as sys
+import os
 import shutil as copier
 import xml.etree.ElementTree as ET
 import time as wait
 import multiprocessing as mp
+import sys
 
 #constants
 RUN_ARGOS           = "argos3 -c"
@@ -20,6 +21,7 @@ POST_EXPERIMENT_WAIT= 1     #also in seconds(used to account for argos start up 
 NUM_BOTS            = (7,10,15,50)  #can set mulitple. will rerun experiments with same 
                             #settings for num bots listed here
 CSV_IN_FILE_NAME    = "aggregation.txt"
+NUM_PROCESSES       = 16
 #Experiment params 
 EP_VELOCITY         = "5"
 EP_DELTA            = "0.1"
@@ -31,7 +33,7 @@ LF_DEFAULT_TRGT_AREA= "false"
 LF_NUM_TARGET_AREAS = "2"
 LF_AREA_SIZE        = "0.3"
 LF_SECONDARY_AREA_OFFSET = "0.2"
-NUM_PROCESSES = 16
+EP_STOP_AFTER_REACHING_TARGET_ZONE = "false" #'true' or 'false'
 #COM FAULTS
 EP_PACKET_DROP_PROB         = "0.5"
 EP_NOISE_STD_DEV            = "0.5"
@@ -39,9 +41,9 @@ EP_DELAYED_TRANMISSION_PROB = "0"
 EP_TIME_STEPS_PER_DELAY     = "0"
 
 def RunArgos(file_name:str, num:int, csv_name:str):
-    sys.chdir(PATH_TO_WORKING_DIR)
+    os.chdir(PATH_TO_WORKING_DIR)
 
-    sys.system(f"{RUN_ARGOS} {XML_OUT_DIR}/{file_name} -z")
+    os.system(f"{RUN_ARGOS} {XML_OUT_DIR}/{file_name} -z")
 
     wait.sleep(EXPERMIMENT_LENGTH + POST_EXPERIMENT_WAIT)
 
@@ -53,23 +55,28 @@ def RunArgos(file_name:str, num:int, csv_name:str):
 
 
 if __name__ == "__main__":
+    #internal var
+    quit_after_gen_xml = False
     #variables
     current_xml_num     = 1
     current_rnd_seed    = STARTING_RND_SEED
     created_xml_files   = list()
     current_xml_name    = XML_OUT_PREFIX + str(current_xml_num) + XML_OUT_SUFFIX
 
+    if len(sys.argv) == 2 and sys.argv[1] == '-xml-only':
+        quit_after_gen_xml = True
+
     #create xml out folder
-    sys.chdir(PATH_TO_WORKING_DIR)
+    os.chdir(PATH_TO_WORKING_DIR)
 
-    if sys.path.exists(XML_OUT_DIR):
+    if os.path.exists(XML_OUT_DIR):
 
-        sys.system(f"rm -r {XML_OUT_DIR}/")
+        os.system(f"rm -r {XML_OUT_DIR}/")
 
-        sys.mkdir(XML_OUT_DIR)
+        os.mkdir(XML_OUT_DIR)
 
     else:
-        sys.mkdir(XML_OUT_DIR)
+        os.mkdir(XML_OUT_DIR)
 
 
     #xml setup
@@ -122,8 +129,10 @@ if __name__ == "__main__":
 
     fb_params_node.set('TimeStepsPerDelay', EP_TIME_STEPS_PER_DELAY)
 
+    fb_params_node.set('StopAfterReachingTargetZone', EP_STOP_AFTER_REACHING_TARGET_ZONE)
+
     #creating desired test files
-    sys.chdir(XML_OUT_DIR)
+    os.chdir(XML_OUT_DIR)
 
     for i in range(0,NUM_RUNS):
 
@@ -144,7 +153,8 @@ if __name__ == "__main__":
             current_xml_num += 1
 
             current_xml_name = XML_OUT_PREFIX + str(current_xml_num) + XML_OUT_SUFFIX
-
+    if quit_after_gen_xml:
+        sys.exit()
     #run the created xml files and record the data produced
     run_numbers = [i for i in range(0,len(created_xml_files))]
     csv_out_name = [f"{CSV_IN_FILE_NAME}{i+1}" for i in range(0,len(created_xml_files))]
@@ -155,8 +165,8 @@ if __name__ == "__main__":
     with mp.Pool(processes=NUM_PROCESSES) as pool:
         pool.starmap(RunArgos,function_run_data)
 
-    sys.chdir(PATH_TO_WORKING_DIR)
+    os.chdir(PATH_TO_WORKING_DIR)
     for name in csv_out_name:
-        sys.system(f"rm {name}")
+        os.system(f"rm {name}")
     
     print("Successfully finished")

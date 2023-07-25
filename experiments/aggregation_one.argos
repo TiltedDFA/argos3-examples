@@ -38,8 +38,9 @@
         HopCountMax="99"
         ForgettingAllowed="true"
         ForgettingTimePeriod="1000"
-        DelayedTransmittionProb="1"
+        DelayedTransmittionProb="0"
         TimeStepsPerDelay="500"
+        StopAfterReachingTargetZone="false"
       />  
     </footbot_aggregation_one>
 

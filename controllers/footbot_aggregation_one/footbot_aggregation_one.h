@@ -167,6 +167,7 @@ private:
    CHopCountManager hop_count_;
    CRotationHandler rotation_handler_;
    CDelayedTransmissionManager rnb_delay_handler_;
+   bool stop_when_reach_target_area_;
 
    //Variable for tracking info to output to the LOG file
    uint64_t num_connections_;
