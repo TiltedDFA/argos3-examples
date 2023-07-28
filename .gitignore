@@ -3,3 +3,4 @@ build
 foraging.txt
 aggregation.txt
 alt_xmls
+__pycache__

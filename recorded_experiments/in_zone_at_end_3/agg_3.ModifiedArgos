@@ -1,0 +1,94 @@
+<argos-configuration>
+
+  
+  
+  
+  <framework>
+    <system threads="0" />
+    <experiment length="60" ticks_per_second="10" random_seed="52" />
+  </framework>
+  
+  
+  
+  
+  <controllers>
+    <footbot_aggregation_one id="fao" library="build/controllers/footbot_aggregation_one/libfootbot_aggregation_one">
+      <actuators>
+        <differential_steering implementation="default" />
+        <range_and_bearing implementation="default" />
+      </actuators>
+      <sensors>
+        <footbot_proximity implementation="default" show_rays="true" />
+        <range_and_bearing implementation="medium" medium="rab" show_rays="true" packet_drop_prob="0" noise_std_dev="0" />
+        <footbot_motor_ground implementation="rot_z_only" />
+        <positioning implementation="default" />
+      </sensors>
+     <params Velocity="5" Delta="0.1" Alpha="10" HopCountMax="99" ForgettingAllowed="true" ForgettingTimePeriod="1000" DelayedTransmittionProb="0" TimeStepsPerDelay="0" StopAfterReachingTargetZone="false" />  
+    </footbot_aggregation_one>
+
+  </controllers>
+  <loop_functions library="build/loop_functions/aggregation_loop_functions/libaggregation_loop_functions" label="aggregation_loop_functions">
+    <aggregation file_name="aggregation.txt3" log_as_csv="true" default_area_config="false" num_target_areas="2" target_area_size="0.3" secondary_area_offset="0.2" />
+  </loop_functions>
+  
+  
+  
+  <arena size="8, 8, 1" center="0,0,0.5">
+
+    
+    <box id="wall_north" size="8,0.1,0.5" movable="false">
+      <body position="0,4,0" orientation="0,0,0" />
+    </box>
+    <box id="wall_south" size="8,0.1,0.5" movable="false">
+      <body position="0,-4,0" orientation="0,0,0" />
+    </box>
+    <box id="wall_east" size="0.1,8,0.5" movable="false">
+      <body position="4,0,0" orientation="0,0,0" />
+    </box>
+    <box id="wall_west" size="0.1,8,0.5" movable="false">
+      <body position="-4,0,0" orientation="0,0,0" />
+    </box>
+
+    
+    <distribute>
+      <position method="uniform" min="-4,-4,0" max="4,4,0" />
+      <orientation method="uniform" min="0,0,0" max="360,0,0" />
+      <entity quantity="50" max_trials="100">
+        <foot-bot id="fb">
+          <controller config="fao" />
+        </foot-bot>
+      </entity>
+    </distribute>
+    
+    <floor id="floor" source="loop_functions" pixels_per_meter="1000" />
+  </arena>
+
+  
+  
+  
+  <physics_engines>
+    
+    <dynamics2d id="dyn2d" />
+  </physics_engines>
+
+  
+  
+  
+  <media>
+    <range_and_bearing id="rab" />
+  </media>
+
+  
+  
+  
+  <visualization>
+    <qt-opengl>
+      <camera>
+        <placements>
+          <placement index="0" position="0,0,8.14689" look_at="0,0,0" up="1,0,0" lens_focal_length="65" />
+        </placements>
+      </camera>
+      <user_functions label="aggregation_user_function" />
+    </qt-opengl>
+  </visualization>
+</argos-configuration>
