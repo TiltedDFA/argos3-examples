@@ -186,7 +186,6 @@ private:
    bool HandleTurning();
    bool AvoidCollisions();
    bool HandleForgetting();
-   bool HandleTargetArea();
    bool ReadTransmissions();
    void MoveForward();
 

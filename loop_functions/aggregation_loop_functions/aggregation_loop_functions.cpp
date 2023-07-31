@@ -30,7 +30,6 @@ CAggregationLoopFunctions::CAggregationLoopFunctions():
 
 void CAggregationLoopFunctions::Init(argos::TConfigurationNode& t_node)
 {
-
    argos::TConfigurationNode& aggregation_node = argos::GetNode(t_node, "aggregation");
    argos::GetNodeAttribute(aggregation_node,"file_name", file_name_);
    argos::GetNodeAttribute(aggregation_node,"log_as_csv",file_out_in_csv_);

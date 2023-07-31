@@ -201,7 +201,7 @@ void CFootBotAggregationOne::RealTimeRotate(const argos::CRadians& avg_bearing)
 
 void CFootBotAggregationOne::TransmitHCData()
 {
-   uint16_t result = rnb_delay_handler_.Update(rnd_gen,hop_count_->GetCurrentHopCount());
+   const uint16_t result = rnb_delay_handler_.Update(rnd_gen,hop_count_->GetCurrentHopCount());
    switch (result)
    {
    case std::numeric_limits<uint16_t>::max():
@@ -278,20 +278,6 @@ bool CFootBotAggregationOne::HandleForgetting()
    return false;
 }
 
-bool CFootBotAggregationOne::HandleTargetArea()
-{
-   const argos::CCI_FootBotMotorGroundSensor::TReadings& gnd_sen_readings = ground_sensor_->GetReadings();
-
-   within_secondary_area_ = (gnd_sen_readings[0].Value <= 0.5 || gnd_sen_readings[1].Value <= 0.5 || gnd_sen_readings[2].Value <= 0.5 || gnd_sen_readings[3].Value <= 0.5);
-   if(gnd_sen_readings[0].Value < 0.1 || gnd_sen_readings[1].Value < 0.1 || gnd_sen_readings[2].Value < 0.1 || gnd_sen_readings[3].Value < 0.1)
-   {
-      hop_count_->SetCurrentHopCount(0);
-      rotation_handler_.NonZeroRotateTo(rnd_gen->Uniform(rng_val_range));
-      return true;
-   }
-   return false;
-}
-
 bool CFootBotAggregationOne::ReadTransmissions()
 {
    argos::CCI_RangeAndBearingSensor::TReadings rnb_readings = rnb_sensor_->GetReadings();
@@ -357,8 +343,7 @@ void CFootBotAggregationOne::ControlStep()
    }
    
    if(HandleTurning())return;
-
-   if(HandleTargetArea())return;
+   
    if(HandleForgetting())return;
    if(ReadTransmissions())return;
 

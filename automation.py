@@ -7,10 +7,10 @@ import sys
 
 #constants
 RUN_ARGOS           = "argos3 -c"
-XML_OUT_DIR         = "/mnt/d/coding/argos3-examples/alt_xmls"
+PATH_TO_WORKING_DIR = "/home/malik/argos3-examples"
+XML_OUT_DIR         = f"{PATH_TO_WORKING_DIR}/alt_xmls"
 XML_OUT_SUFFIX      = ".ModifiedArgos"
 OG_XML_LOCATION     = "experiments/aggregation_one.argos"
-PATH_TO_WORKING_DIR = "/mnt/d/coding/argos3-examples"
 XML_OUT_PREFIX      = "agg_"
 CSV_OUT_PREFIX      = "dat_"
 EXPERMIMENT_LENGTH  = 60     #in seconds 
@@ -29,10 +29,7 @@ EP_ALPHA            = "10"
 EP_HCMAX            = "99"
 EP_FORGETTING_ON    = "true"
 EP_FORGETTING_TIMEP = "1000"
-LF_DEFAULT_TRGT_AREA= "false"
-LF_NUM_TARGET_AREAS = "2"
-LF_AREA_SIZE        = "0.3"
-LF_SECONDARY_AREA_OFFSET = "0.2"
+LF_RADIUS_COUNTED_WITHIN_TRGT_BOT = "0.5"
 EP_STOP_AFTER_REACHING_TARGET_ZONE = "false" #'true' or 'false'
 #COM FAULTS
 EP_PACKET_DROP_PROB         = "0.5"
@@ -113,13 +110,7 @@ if __name__ == "__main__":
 
     loop_fun_params.set('file_name', CSV_IN_FILE_NAME)
 
-    loop_fun_params.set('default_area_config', LF_DEFAULT_TRGT_AREA)
-
-    loop_fun_params.set('num_target_areas', LF_NUM_TARGET_AREAS)
-
-    loop_fun_params.set('target_area_size', LF_AREA_SIZE)
-
-    loop_fun_params.set('secondary_area_offset', LF_SECONDARY_AREA_OFFSET)
+    loop_fun_params.set('radius_within_trgt_fb', LF_RADIUS_COUNTED_WITHIN_TRGT_BOT)
 
     rnb_node.set('packet_drop_prob', EP_PACKET_DROP_PROB)
 
