@@ -75,26 +75,45 @@ private:
  * will then set the state of currently_forgetting_ to false and it will reset the forget_tp_counter_
  * to the value of forgetting_tp_.
  */
-class CHopCountManager 
+class CHopCount
+{
+public:
+   virtual bool Update()=0;
+   // 'HCM' will represent CHopCountManager and 'PHC' will represent CPersitantHopCount
+   virtual bool IsPersitant()const=0;
+
+   virtual void ResetHopCount()=0;
+   virtual void SetMaxHopCount(uint16_t max_hc)=0;
+   virtual void SetCurrentHopCount(uint16_t hc)=0;
+   virtual void SetForgettingEnabled(bool ForgettingAllowed)=0;
+   virtual void SetForgettingTimePeriod(uint16_t forgetting_tp)=0;
+   virtual uint16_t GetMaxHopCount()const=0;
+   virtual uint16_t GetCurrentHopCount()const=0;
+   virtual uint16_t GetForgettingTimePeriod()const=0;
+   virtual bool GetForgettingEnabled()const=0;
+   virtual bool GetCurrentlyForgetting()const=0;
+};
+class CHopCountManager : public CHopCount
 {
 public:
    CHopCountManager()=delete;
    explicit CHopCountManager(bool forgetting_enabled,uint16_t hop_count_max,uint16_t forgetting_tp);
 
-   bool Update();
-   void ResetHopCount();
+   bool Update()override;
+   void ResetHopCount()override;
 
-   void SetMaxHopCount(uint16_t max_hc);
-   void SetCurrentHopCount(uint16_t hc);
-   void SetForgettingEnabled(bool ForgettingAllowed);
-   void SetForgettingTimePeriod(uint16_t forgetting_tp);
+   void SetMaxHopCount(uint16_t max_hc)override;
+   void SetCurrentHopCount(uint16_t hc)override;
+   void SetForgettingEnabled(bool ForgettingAllowed)override;
+   void SetForgettingTimePeriod(uint16_t forgetting_tp)override;
 
-   uint16_t GetMaxHopCount()const;
-   uint16_t GetCurrentHopCount()const;
-   uint16_t GetForgettingTimePeriod()const;
-   bool GetForgettingEnabled()const;
-   bool GetCurrentlyForgetting()const;
+   uint16_t GetMaxHopCount()const override;
+   uint16_t GetCurrentHopCount()const override;
+   uint16_t GetForgettingTimePeriod()const override;
+   bool GetForgettingEnabled()const override;
+   bool GetCurrentlyForgetting()const override;
 
+   bool IsPersitant()const override{return false;}
 private:
    uint16_t forgetting_tp_;
    uint16_t max_hop_count_;
@@ -102,6 +121,32 @@ private:
    uint16_t current_hop_count_;
    bool     forgetting_enabled_;
    bool     currently_forgetting_;
+};
+class CPersistantHopCount : public CHopCount
+{
+public:
+   CPersistantHopCount()=delete;
+   CPersistantHopCount(uint16_t hop_count, uint16_t max_hop_count):
+      hop_count_(hop_count),max_hop_count_(max_hop_count){}
+
+   bool Update()override{return false;}
+   bool IsPersitant()const override{return true;}
+
+   void ResetHopCount()override{}
+
+   void SetMaxHopCount(uint16_t max_hc)override{max_hop_count_ = max_hc;}
+   void SetCurrentHopCount(uint16_t hc)override{}
+   void SetForgettingEnabled(bool ForgettingAllowed)override{}
+   void SetForgettingTimePeriod(uint16_t forgetting_tp)override{}
+
+   uint16_t GetMaxHopCount()const override{return max_hop_count_;}
+   uint16_t GetCurrentHopCount()const override{return hop_count_;}
+   uint16_t GetForgettingTimePeriod()const override{return 0;}
+   bool GetForgettingEnabled()const override{return false;}
+   bool GetCurrentlyForgetting()const override{return false;}
+private:
+   uint16_t hop_count_;
+   uint16_t max_hop_count_;
 };
 class CDelayedTransmissionManager
 {
@@ -126,7 +171,7 @@ public:
    virtual void Init(argos::TConfigurationNode& t_node);
    virtual void ControlStep();
    virtual void Reset() {}
-   virtual void Destroy() {}
+   virtual void Destroy()override {delete hop_count_;}
    std::string GetHopCount()const;
    std::string GetNumConnections()const;
    std::string GetWithinAreaState()const;
@@ -164,7 +209,7 @@ private:
    
 
    //Other internal variables
-   CHopCountManager hop_count_;
+   CHopCount* hop_count_;
    CRotationHandler rotation_handler_;
    CDelayedTransmissionManager rnb_delay_handler_;
    bool stop_when_reach_target_area_;
