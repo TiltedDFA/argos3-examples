@@ -4,13 +4,14 @@ import xml.etree.ElementTree as ET
 import time as wait
 import multiprocessing as mp
 import sys
+import subprocess as sproc
 
 #constants
-RUN_ARGOS           = "argos3 -c"
-XML_OUT_DIR         = "/mnt/d/coding/argos3-examples/alt_xmls"
+RUN_ARGOS           = "argos3"
+PATH_TO_WORKING_DIR = "/home/malik/argos3-examples"
+XML_OUT_DIR         = f"{PATH_TO_WORKING_DIR}/alt_xmls"
 XML_OUT_SUFFIX      = ".ModifiedArgos"
 OG_XML_LOCATION     = "experiments/aggregation_one.argos"
-PATH_TO_WORKING_DIR = "/mnt/d/coding/argos3-examples"
 XML_OUT_PREFIX      = "agg_"
 CSV_OUT_PREFIX      = "dat_"
 EXPERMIMENT_LENGTH  = 60     #in seconds 
@@ -43,9 +44,9 @@ EP_TIME_STEPS_PER_DELAY     = "0"
 def RunArgos(file_name:str, num:int, csv_name:str):
     os.chdir(PATH_TO_WORKING_DIR)
 
-    os.system(f"{RUN_ARGOS} {XML_OUT_DIR}/{file_name} -z")
+    proc = sproc.Popen([RUN_ARGOS, "-c", f"{XML_OUT_DIR}/{file_name}", "-z"])
 
-    wait.sleep(EXPERMIMENT_LENGTH + POST_EXPERIMENT_WAIT)
+    proc.wait()
 
     original    = f"{PATH_TO_WORKING_DIR}/{csv_name}"
 
