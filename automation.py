@@ -18,9 +18,9 @@ CSV_OUT_PREFIX      = "dat_"
 EXPERMIMENT_LENGTH  = 600     #in seconds 
 TICKS_STEPS_PER_SEC = "10"  
 STARTING_RND_SEED   = 50
-NUM_RUNS            = 100    #current works as a delta for the random seed 
+NUM_RUNS            = 500    #current works as a delta for the random seed 
 POST_EXPERIMENT_WAIT= 1     #also in seconds(used to account for argos start up time)
-NUM_BOTS            = (50,)  #can set mulitple. will rerun experiments with same 
+NUM_BOTS            = (3,5,15,50,200)  #can set mulitple. will rerun experiments with same 
                             #settings for num bots listed here
 CSV_IN_FILE_NAME    = "aggregation.txt"
 NUM_PROCESSES       = 12
