@@ -172,9 +172,9 @@ void CFootBotAggregationOne::Init(argos::TConfigurationNode &t_node)
    argos::GetNodeAttributeOrDefault(t_node, "Velocity", wheel_velocity_, wheel_velocity_);
    argos::GetNodeAttributeOrDefault(t_node, "Delta", delta_, delta_);
    argos::GetNodeAttributeOrDefault(t_node, "Alpha", alpha_, alpha_);
-   argos::GetNodeAttributeOrDefault(t_node, "HopCountMax", xml_max_hop_count, hop_count_->GetMaxHopCount());
-   argos::GetNodeAttributeOrDefault(t_node, "ForgettingAllowed", xml_forgetting_allowed, hop_count_->GetForgettingEnabled());
-   argos::GetNodeAttributeOrDefault(t_node, "ForgettingTimePeriod", xml_forgetting_time_period, hop_count_->GetForgettingTimePeriod());
+   argos::GetNodeAttributeOrDefault(t_node, "HopCountMax", xml_max_hop_count, xml_max_hop_count);
+   argos::GetNodeAttributeOrDefault(t_node, "ForgettingAllowed", xml_forgetting_allowed, xml_forgetting_allowed);
+   argos::GetNodeAttributeOrDefault(t_node, "ForgettingTimePeriod", xml_forgetting_time_period, xml_forgetting_time_period);
    argos::GetNodeAttributeOrDefault(t_node, "DelayedTransmittionProb", rnb_delay_prob, rnb_delay_prob);
    argos::GetNodeAttributeOrDefault(t_node, "TimeStepsPerDelay", time_steps_per_delay, time_steps_per_delay);
    argos::GetNodeAttributeOrDefault(t_node, "StopAfterReachingTargetZone", stop_when_reach_target_area_, stop_when_reach_target_area_);
@@ -365,7 +365,12 @@ void CFootBotAggregationOne::ControlStep()
    if(AvoidCollisions())return;
    MoveForward();
 }
-
+void CFootBotAggregationOne::SetPersitantHopCount(uint16_t hop_count)
+{
+   const uint16_t max_hc = hop_count_->GetMaxHopCount();
+   delete hop_count_;
+   hop_count_ = new CPersistantHopCount(hop_count,max_hc);
+}
 std::string CFootBotAggregationOne::GetHopCount()const
 {
    return std::to_string(hop_count_->GetCurrentHopCount());

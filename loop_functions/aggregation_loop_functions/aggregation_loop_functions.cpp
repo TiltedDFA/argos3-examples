@@ -23,24 +23,18 @@ bool TargetArea::PointWithinSecondaryArea(const argos::CVector2& point)const
 CAggregationLoopFunctions::CAggregationLoopFunctions():
    file_name_("aggregation.txt"),
    file_stream_(),
-   target_areas_(),
+   radius_within_target_(0.1),
    bot_entities_(),
+   target_bot_(nullptr),
    file_out_in_csv_(false){}
 
 void CAggregationLoopFunctions::Init(argos::TConfigurationNode& t_node)
 {
-   uint64_t num_target_areas{0};
-   argos::Real target_area_radius{0};
-   argos::Real secondary_area_offset{0};
-   bool default_area_config{false};
 
    argos::TConfigurationNode& aggregation_node = argos::GetNode(t_node, "aggregation");
    argos::GetNodeAttribute(aggregation_node,"file_name", file_name_);
    argos::GetNodeAttribute(aggregation_node,"log_as_csv",file_out_in_csv_);
-   argos::GetNodeAttribute(aggregation_node,"default_area_config",default_area_config);
-   argos::GetNodeAttribute(aggregation_node,"num_target_areas", num_target_areas);
-   argos::GetNodeAttribute(aggregation_node,"target_area_size", target_area_radius);
-   argos::GetNodeAttribute(aggregation_node,"secondary_area_offset", secondary_area_offset);
+   argos::GetNodeAttribute(aggregation_node,"radius_within_trgt_fb",radius_within_target_);
 
    file_stream_.open(file_name_,std::ios_base::trunc | std::ios_base::out);
    if(!file_out_in_csv_) file_stream_ << first_line_file << std::endl;
@@ -48,47 +42,19 @@ void CAggregationLoopFunctions::Init(argos::TConfigurationNode& t_node)
    const argos::CRange<argos::CVector3> arena_limits = GetSpace().GetArenaLimits();
    const argos::CVector3 arena_center = GetSpace().GetArenaCenter();
    const auto arena_size = GetSpace().GetArenaSize();
-   if(default_area_config)
-   {
-      target_areas_.emplace_back(
-         argos::CVector2(arena_center.GetX(), arena_center.GetY() - arena_size.GetY()/2.5),
-         arena_size.GetX()/25,
-         (arena_size.GetX()/25)
-         );
-      target_areas_.emplace_back(
-         argos::CVector2(arena_center.GetX(), arena_center.GetY() + arena_size.GetY()/2.5),
-         arena_size.GetX()/25,
-         (arena_size.GetX()/25)
-         );
-   }
-   else
-   {
-      argos::CRange<argos::Real> random_x_coord{arena_limits.GetMin().GetX(),arena_limits.GetMax().GetX()};
-      argos::CRange<argos::Real> random_y_coord{arena_limits.GetMin().GetY(),arena_limits.GetMax().GetY()};
-      for(uint64_t i{0}; i < num_target_areas;++i)
-      {
-         target_areas_.emplace_back(
-            argos::CVector2(
-               static_cast<argos::Real>(rnd_gen->Uniform(random_x_coord)),
-               static_cast<argos::Real>(rnd_gen->Uniform(random_y_coord))),
-            target_area_radius,
-            secondary_area_offset);
-      }
-   }
 
    const auto bots = GetSpace().GetEntitiesByType("foot-bot");
    for(auto& [key,value] : bots)
       bot_entities_.push_back(argos::any_cast<argos::CFootBotEntity*>(value));
-   
-   
+      
+   target_bot_ = bot_entities_.at(0);
+   if(target_bot_ == nullptr) throw std::runtime_error("Target bot ptr was null in loop function init");
+
+   CFootBotAggregationOne& ctrlr = dynamic_cast<CFootBotAggregationOne&>(target_bot_->GetControllableEntity().GetController());
+   ctrlr.SetPersitantHopCount(0);
 }
 argos::CColor CAggregationLoopFunctions::GetFloorColor(const argos::CVector2& c_position_on_plane) 
 {
-   for(const auto& i : target_areas_)
-   {
-      if(i.PointWithinTargetArea(c_position_on_plane)) return argos::CColor::BLACK;
-      else if (i.PointWithinSecondaryArea(c_position_on_plane)) return argos::CColor::GRAY50;
-   }
    return argos::CColor::WHITE;
 }
 void CAggregationLoopFunctions::Reset()
@@ -117,7 +83,7 @@ void CAggregationLoopFunctions::PreStep()
                         << ctrlr.GetHopCount()              << ','
                         << ctrlr.GetForgettingState()       << ','
                         << ctrlr.GetNumConnections()        << ',' 
-                        << GetZone(ctrlr.GetPosition())     << std::endl;
+                        << IsWithinTargetBotRadius(ctrlr.GetPosition())     << std::endl;
       }
    }
    else
@@ -130,16 +96,17 @@ void CAggregationLoopFunctions::PreStep()
                         << ctrlr.GetHopCount()              << "\t\t\t"
                         << ctrlr.GetForgettingState()       << "\t\t\t\t"
                         << ctrlr.GetNumConnections()        << "\t\t\t\t" 
-                        << GetZone(ctrlr.GetPosition())     << std::endl;
+                        << IsWithinTargetBotRadius(ctrlr.GetPosition())     << std::endl;
       }            
    }
 }
-uint64_t CAggregationLoopFunctions::GetZone(argos::CVector3 position)
+std::string CAggregationLoopFunctions::IsWithinTargetBotRadius(argos::CVector3 position)
 {
-   for(uint64_t i = 1; i < target_areas_.size()+1;++i)
-   { 
-      if(target_areas_[i-1].PointWithinTargetArea(argos::CVector2(position.GetX(),position.GetY()))) return i; 
-   }
-   return 0;
+   if(target_bot_ == nullptr) return "false";
+   const argos::CVector3 pos = dynamic_cast<const CFootBotAggregationOne&>(target_bot_->GetControllableEntity().GetController()).GetPosition();
+   return 
+      (sqrt(pow(position.GetX()-pos.GetX(),2) + pow(position.GetY()-pos.GetY(),2)) <= radius_within_target_) ?
+      "true" :
+      "false";
 }
 REGISTER_LOOP_FUNCTIONS(CAggregationLoopFunctions, "aggregation_loop_functions")

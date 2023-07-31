@@ -39,12 +39,14 @@ public:
 public:
     inline static argos::CRandom::CRNG* rnd_gen{argos::CRandom::CreateRNG("argos")};
 private:
-    uint64_t GetZone(argos::CVector3 position);
+    std::string IsWithinTargetBotRadius(argos::CVector3 position);
 private:
     std::string file_name_;
     std::ofstream file_stream_;
-    std::vector<TargetArea> target_areas_;
+    //This will be used to say whether a fb is close enough to the target fb
+    argos::Real radius_within_target_;
     std::vector<argos::CFootBotEntity*> bot_entities_;
+    argos::CFootBotEntity* target_bot_;
     bool file_out_in_csv_;
 };
 

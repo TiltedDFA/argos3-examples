@@ -179,6 +179,7 @@ public:
    argos::CVector3 GetPosition()const;
    void ResetHopCount();
 
+   void SetPersitantHopCount(uint16_t hop_count);
 private:
    void RealTimeRotate(const argos::CRadians& avg_bearing);
    void TransmitHCData();
