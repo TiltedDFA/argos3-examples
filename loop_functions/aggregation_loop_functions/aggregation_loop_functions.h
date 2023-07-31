@@ -12,19 +12,6 @@
 #include <argos3/plugins/robots/foot-bot/simulator/footbot_entity.h>
 #include <cmath>
 
-//target areas will be circles
-class TargetArea
-{
-public:
-    TargetArea()=delete;
-    explicit TargetArea(const argos::CVector2& area_center, argos::Real area_radius, argos::Real secondary_offset);
-    bool PointWithinTargetArea(const argos::CVector2& point)const;
-    bool PointWithinSecondaryArea(const argos::CVector2& point)const;
-private:
-    argos::CVector2 area_center_;
-    argos::Real area_radius_;
-    argos::Real secondary_offset_;
-};
 class CAggregationLoopFunctions : public argos::CLoopFunctions 
 {
 public:

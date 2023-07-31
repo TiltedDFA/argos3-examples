@@ -46,9 +46,7 @@ void CRotationHandler::ApproachZero()
 void CRotationHandler::NonZeroRotateTo(argos::Real desired_turning_angle)
 {
    if(rot_frames_remaining_ != 0)
-   {
       RotateTo(desired_turning_angle);
-   }
 }
 
 int8_t CRotationHandler::GetRemainingRotationTime(){return rot_frames_remaining_;}
@@ -63,10 +61,7 @@ CHopCountManager::CHopCountManager(bool forgetting_allowed, uint16_t hopcount_ma
 
 bool CHopCountManager::Update()
 {
-   if (!forgetting_enabled_)
-   {
-      return false;
-   }
+   if (!forgetting_enabled_) return false;
 
    if (!currently_forgetting_ && forget_tp_counter_ == 0)
    {
@@ -289,9 +284,7 @@ bool CFootBotAggregationOne::ReadTransmissions()
    num_connections_ = rnb_readings.size();
 
    for(std::size_t i = 0;i < num_connections_;++i)
-   {
       if(rnb_readings[i].Data[0] < min_hop_count) min_hop_count = rnb_readings[i].Data[0];
-   }
 
    if(min_hop_count >= hop_count_->GetMaxHopCount() || min_hop_count > hop_count_->GetCurrentHopCount())
       return false;
@@ -300,13 +293,11 @@ bool CFootBotAggregationOne::ReadTransmissions()
    argos::Real num_occurances{0};
 
    for(auto it = rnb_readings.cbegin(); it != rnb_readings.cend();++it)
-   {
       if(it->Data[0] == min_hop_count)
       {
          ++num_occurances;
          total_bearing += it->HorizontalBearing;
       }
-   }
 
    total_bearing /= num_occurances;
    hop_count_->SetCurrentHopCount(min_hop_count + 1);
@@ -343,7 +334,7 @@ void CFootBotAggregationOne::ControlStep()
    }
    
    if(HandleTurning())return;
-   
+
    if(HandleForgetting())return;
    if(ReadTransmissions())return;
 

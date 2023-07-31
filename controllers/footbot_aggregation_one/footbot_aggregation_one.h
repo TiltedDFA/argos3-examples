@@ -59,6 +59,7 @@ public:
 private:
    int8_t rot_frames_remaining_;
    uint8_t time_needed_180_;
+
 };
 
 /**
@@ -92,7 +93,9 @@ public:
    virtual uint16_t GetForgettingTimePeriod()const=0;
    virtual bool GetForgettingEnabled()const=0;
    virtual bool GetCurrentlyForgetting()const=0;
+
 };
+
 class CHopCountManager : public CHopCount
 {
 public:
@@ -114,6 +117,7 @@ public:
    bool GetCurrentlyForgetting()const override;
 
    bool IsPersitant()const override{return false;}
+
 private:
    uint16_t forgetting_tp_;
    uint16_t max_hop_count_;
@@ -121,7 +125,9 @@ private:
    uint16_t current_hop_count_;
    bool     forgetting_enabled_;
    bool     currently_forgetting_;
+
 };
+
 class CPersistantHopCount : public CHopCount
 {
 public:
@@ -144,10 +150,13 @@ public:
    uint16_t GetForgettingTimePeriod()const override{return 0;}
    bool GetForgettingEnabled()const override{return false;}
    bool GetCurrentlyForgetting()const override{return false;}
+   
 private:
    uint16_t hop_count_;
    uint16_t max_hop_count_;
+
 };
+
 class CDelayedTransmissionManager
 {
 public:
@@ -159,11 +168,13 @@ public:
 
 private:
    argos::CRandom::CRNG* rng_ptr_;
+
    bool enabled_;
    uint64_t time_step_delay_;
    std::queue<uint16_t> delayed_transmission_data_;
 
 };
+
 class CFootBotAggregationOne : public argos::CCI_Controller 
 {
 public:
@@ -217,6 +228,7 @@ private:
    //Variable for tracking info to output to the LOG file
    uint64_t num_connections_;
    bool     within_secondary_area_;
+   
 };
 
 #endif
