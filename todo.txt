@@ -40,6 +40,7 @@ for DAT1 books:
 
 ** Igual, L. Segui, S. Introduction to Data Science: A Python Approach to Concepts, Techniques and Applications, Springer, 2017
 
+https://src.fedoraproject.org/rpms/qt5
 
 Chosen communication faults:
     -Range and bearing sensor-packet loss -done
