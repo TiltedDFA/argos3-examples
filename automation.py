@@ -9,21 +9,21 @@ import shlex
 
 #constants
 RUN_ARGOS           = "argos3"
-PATH_TO_WORKING_DIR = "/home/malik/argos3-examples"
+PATH_TO_WORKING_DIR = "/home/malik/Desktop/argos3-examples"
 XML_OUT_DIR         = f"{PATH_TO_WORKING_DIR}/alt_xmls"
 XML_OUT_SUFFIX      = ".ModifiedArgos"
 OG_XML_LOCATION     = "experiments/aggregation_one.argos"
 XML_OUT_PREFIX      = "agg_"
 CSV_OUT_PREFIX      = "dat_"
-EXPERMIMENT_LENGTH  = 600     #in seconds 
+EXPERMIMENT_LENGTH  = 300     #in seconds 
 TICKS_STEPS_PER_SEC = "10"  
-STARTING_RND_SEED   = 50
-NUM_RUNS            = 500    #current works as a delta for the random seed 
+STARTING_RND_SEED   = 2
+NUM_RUNS            = 100    #current works as a delta for the random seed 
 POST_EXPERIMENT_WAIT= 1     #also in seconds(used to account for argos start up time)
-NUM_BOTS            = (3,5,15,50,200)  #can set mulitple. will rerun experiments with same 
+NUM_BOTS            = (5,15,50,100)  #can set mulitple. will rerun experiments with same 
                             #settings for num bots listed here
-CSV_IN_FILE_NAME    = "aggregation.txt"
-NUM_PROCESSES       = 12
+CSV_IN_FILE_NAME    = "agg"
+NUM_PROCESSES       = 16
 #Experiment params 
 EP_VELOCITY         = "5"
 EP_DELTA            = "0.1"
@@ -31,11 +31,11 @@ EP_ALPHA            = "10"
 EP_HCMAX            = "99"
 EP_FORGETTING_ON    = "true"
 EP_FORGETTING_TIMEP = "1000"
-LF_RADIUS_COUNTED_WITHIN_TRGT_BOT = "0.5"
+LF_RADIUS_COUNTED_WITHIN_TRGT_BOT = "2"
 EP_STOP_AFTER_REACHING_TARGET_ZONE = "false" #'true' or 'false'
 #COM FAULTS
 EP_PACKET_DROP_PROB         = "0.5"
-EP_NOISE_STD_DEV            = "0.5"
+EP_NOISE_STD_DEV            = "0"
 EP_DELAYED_TRANMISSION_PROB = "0"
 EP_TIME_STEPS_PER_DELAY     = "0"
 
@@ -60,7 +60,7 @@ if __name__ == "__main__":
     current_xml_num     = 1
     current_rnd_seed    = STARTING_RND_SEED
     created_xml_files   = list()
-    current_xml_name    = XML_OUT_PREFIX + str(current_xml_num) + XML_OUT_SUFFIX
+    current_xml_name    = ""
 
     if len(sys.argv) == 2 and sys.argv[1] == '-xml-only':
         quit_after_gen_xml = True
@@ -137,22 +137,24 @@ if __name__ == "__main__":
             
             entity_node.set('quantity', str(num_bots))
             
-            loop_fun_params.set('file_name', f"{CSV_IN_FILE_NAME}{current_xml_num}")
-
-            tree.write(current_xml_name)
-
-            created_xml_files.append(current_xml_name)
+            current_xml_name = f"{CSV_IN_FILE_NAME}_{current_xml_num}_b{num_bots}.xml"
 
             current_xml_num += 1
 
-            current_xml_name = XML_OUT_PREFIX + str(current_xml_num) + XML_OUT_SUFFIX
+            created_xml_files.append(current_xml_name)
+            
+            loop_fun_params.set('file_name', current_xml_name)
+
+            tree.write(current_xml_name)
+
+
+
             
     if quit_after_gen_xml:
         sys.exit()
     #run the created xml files and record the data produced
     run_numbers = [i for i in range(0,len(created_xml_files))]
-    csv_out_name = [f"{CSV_IN_FILE_NAME}{i+1}" for i in range(0,len(created_xml_files))]
-    function_run_data = [(created_xml_files[i],run_numbers[i],csv_out_name[i]) for i in range(0,len(created_xml_files))]
+    function_run_data = [(created_xml_files[i],run_numbers[i],created_xml_files[i]) for i in range(0,len(created_xml_files))]
 
     print(function_run_data)
 
@@ -160,7 +162,7 @@ if __name__ == "__main__":
         pool.starmap(RunArgos,function_run_data)
 
     os.chdir(PATH_TO_WORKING_DIR)
-    for name in csv_out_name:
+    for name in created_xml_files:
         os.system(f"rm {name}")
     
     print("Successfully finished")

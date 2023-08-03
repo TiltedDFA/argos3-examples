@@ -82,12 +82,13 @@ public:
    virtual bool Update()=0;
    // 'HCM' will represent CHopCountManager and 'PHC' will represent CPersitantHopCount
    virtual bool IsPersitant()const=0;
-
    virtual void ResetHopCount()=0;
+
    virtual void SetMaxHopCount(uint16_t max_hc)=0;
    virtual void SetCurrentHopCount(uint16_t hc)=0;
    virtual void SetForgettingEnabled(bool ForgettingAllowed)=0;
    virtual void SetForgettingTimePeriod(uint16_t forgetting_tp)=0;
+
    virtual uint16_t GetMaxHopCount()const=0;
    virtual uint16_t GetCurrentHopCount()const=0;
    virtual uint16_t GetForgettingTimePeriod()const=0;
@@ -104,6 +105,7 @@ public:
 
    bool Update()override;
    void ResetHopCount()override;
+   bool IsPersitant()const override{return false;}
 
    void SetMaxHopCount(uint16_t max_hc)override;
    void SetCurrentHopCount(uint16_t hc)override;
@@ -116,7 +118,6 @@ public:
    bool GetForgettingEnabled()const override;
    bool GetCurrentlyForgetting()const override;
 
-   bool IsPersitant()const override{return false;}
 
 private:
    uint16_t forgetting_tp_;
@@ -136,9 +137,9 @@ public:
       hop_count_(hop_count),max_hop_count_(max_hop_count){}
 
    bool Update()override{return false;}
+   void ResetHopCount()override{}
    bool IsPersitant()const override{return true;}
 
-   void ResetHopCount()override{}
 
    void SetMaxHopCount(uint16_t max_hc)override{max_hop_count_ = max_hc;}
    void SetCurrentHopCount(uint16_t hc)override{}
@@ -183,14 +184,16 @@ public:
    virtual void ControlStep();
    virtual void Reset() {}
    virtual void Destroy()override {delete hop_count_;}
+
+   void ResetHopCount();
+   void SetPersitantHopCount(uint16_t hop_count);
+   argos::CVector3 GetPosition()const;
+
    std::string GetHopCount()const;
    std::string GetNumConnections()const;
    std::string GetWithinAreaState()const;
    std::string GetForgettingState()const;
-   argos::CVector3 GetPosition()const;
-   void ResetHopCount();
 
-   void SetPersitantHopCount(uint16_t hop_count);
 private:
    void RealTimeRotate(const argos::CRadians& avg_bearing);
    void TransmitHCData();

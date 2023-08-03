@@ -38,15 +38,28 @@ def Main() -> None:
         all_files_data.append(file_data)
 
     for i in range(0,NUM_CSVS):
-        random_seeds.append(auto.STARTING_RND_SEED + i)
+       random_seeds.append(auto.STARTING_RND_SEED + i)
+    # for i in range(0,NUM_CSVS):
+    #    random_seeds.append(i) #timestep
 
+    # for i in all_files_data:
+    #     #print(i)
+    #     dat2 = list()
+    #     num_in_range = 0
+    #     for key in i:
+    #         for t in i[key]:
+    #             if t[4] == True:
+    #                 num_in_range += 1
+    #         dat2.append(num_in_range)
+    #     num_robots_in_zones_at_end.append(dat2)
     for file_data in all_files_data:
         total_robots_at_end = 0
         for data in file_data[str(len(file_data))]:
             total_robots_at_end += 1 if data[4] != 0 else 0
         num_robots_in_zones_at_end.append(total_robots_at_end)
-
+ 
     plt.figure(figsize=(7, 7))
+    # plt.plot(random_seeds,num_robots_in_zones_at_end)
     plt.bar(random_seeds,num_robots_in_zones_at_end)
     plt.xlabel("Random seed")
     plt.ylabel("Num bots in zone")
@@ -56,7 +69,7 @@ def Main() -> None:
     plt.subplots_adjust(left=0.1,right=0.5,bottom=0.1,top=0.9)
     plt.tight_layout()
     plt.savefig("graph.svg")
-    plt.show()
+    #plt.show()
 
 if __name__ == "__main__":
     Main()
