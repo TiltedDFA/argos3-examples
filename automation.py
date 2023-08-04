@@ -6,6 +6,7 @@ import multiprocessing as mp
 import sys
 import subprocess as sproc
 import shlex
+import re
 
 #constants
 RUN_ARGOS           = "argos3"
@@ -15,12 +16,12 @@ XML_OUT_SUFFIX      = ".ModifiedArgos"
 OG_XML_LOCATION     = "experiments/aggregation_one.argos"
 XML_OUT_PREFIX      = "agg_"
 CSV_OUT_PREFIX      = "dat_"
-EXPERMIMENT_LENGTH  = 300     #in seconds 
+EXPERMIMENT_LENGTH  = 600     #in seconds 
 TICKS_STEPS_PER_SEC = "10"  
 STARTING_RND_SEED   = 2
-NUM_RUNS            = 100    #current works as a delta for the random seed 
+NUM_RUNS            = 50    #current works as a delta for the random seed 
 POST_EXPERIMENT_WAIT= 1     #also in seconds(used to account for argos start up time)
-NUM_BOTS            = (5,15,50,100)  #can set mulitple. will rerun experiments with same 
+NUM_BOTS            = 50  #can set mulitple. will rerun experiments with same 
                             #settings for num bots listed here
 CSV_IN_FILE_NAME    = "agg"
 NUM_PROCESSES       = 16
@@ -30,11 +31,11 @@ EP_DELTA            = "0.1"
 EP_ALPHA            = "10"
 EP_HCMAX            = "99"
 EP_FORGETTING_ON    = "true"
-EP_FORGETTING_TIMEP = "1000"
+EP_FORGETTING_TIMEP = "500"
 LF_RADIUS_COUNTED_WITHIN_TRGT_BOT = "2"
 EP_STOP_AFTER_REACHING_TARGET_ZONE = "false" #'true' or 'false'
 #COM FAULTS
-EP_PACKET_DROP_PROB         = "0.5"
+EP_PACKET_DROP_PROB         = "0.1"
 EP_NOISE_STD_DEV            = "0"
 EP_DELAYED_TRANMISSION_PROB = "0"
 EP_TIME_STEPS_PER_DELAY     = "0"
@@ -64,6 +65,18 @@ if __name__ == "__main__":
 
     if len(sys.argv) == 2 and sys.argv[1] == '-xml-only':
         quit_after_gen_xml = True
+    elif len(sys.argv) == 9:
+        NUM_BOTS                            = re.sub(r'[-].+[=]', '', sys.argv[1])
+        if int(re.sub(r'[-].+[=]', '', sys.argv[2])) == 0:
+            EP_FORGETTING_ON = "false"
+        EP_FORGETTING_TIMEP                 = re.sub(r'[-].+[=]', '', sys.argv[2])
+        LF_RADIUS_COUNTED_WITHIN_TRGT_BOT   = re.sub(r'[-].+[=]', '', sys.argv[3])
+        EP_PACKET_DROP_PROB                 = re.sub(r'[-].+[=]', '', sys.argv[4])
+        EP_NOISE_STD_DEV                    = re.sub(r'[-].+[=]', '', sys.argv[5])
+        EP_DELAYED_TRANMISSION_PROB         = re.sub(r'[-].+[=]', '', sys.argv[6])
+        EP_TIME_STEPS_PER_DELAY             = re.sub(r'[-].+[=]', '', sys.argv[7])
+        XML_OUT_DIR                         = f"{XML_OUT_DIR}{re.sub(r'[-].+[=]', '', sys.argv[8])}"
+
 
     #create xml out folder
     os.chdir(PATH_TO_WORKING_DIR)
@@ -132,20 +145,18 @@ if __name__ == "__main__":
         experiment_node.set('length', str(EXPERMIMENT_LENGTH))
 
         experiment_node.set('random_seed', str(int(current_rnd_seed + i)))
+        
+        entity_node.set('quantity', str(NUM_BOTS))
+        
+        current_xml_name = f"{CSV_IN_FILE_NAME}_{current_xml_num}_b{NUM_BOTS}.xml"
 
-        for num_bots in NUM_BOTS:
-            
-            entity_node.set('quantity', str(num_bots))
-            
-            current_xml_name = f"{CSV_IN_FILE_NAME}_{current_xml_num}_b{num_bots}.xml"
+        current_xml_num += 1
 
-            current_xml_num += 1
+        created_xml_files.append(current_xml_name)
+        
+        loop_fun_params.set('file_name', current_xml_name)
 
-            created_xml_files.append(current_xml_name)
-            
-            loop_fun_params.set('file_name', current_xml_name)
-
-            tree.write(current_xml_name)
+        tree.write(current_xml_name)
 
 
 

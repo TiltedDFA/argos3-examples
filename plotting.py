@@ -1,6 +1,9 @@
-import matplotlib.pyplot as plt
-import os as sys
+import re
+import os
+import sys
 import automation as auto 
+import matplotlib.pyplot as plt
+
 
 CSV_FILE_PREFIXES   = "dat_"
 CSV_FILE_SUFFIXES   = ".csv"
@@ -10,21 +13,54 @@ NUM_CSVS            = len(auto.NUM_BOTS) * auto.NUM_RUNS
 def GenGraphContext() -> str:
     graph_context = f"Experiment length: {auto.EXPERMIMENT_LENGTH}s\nTarget area size: {auto.LF_RADIUS_COUNTED_WITHIN_TRGT_BOT}\n"
     graph_context += f"Stop after reaching zone: {auto.EP_STOP_AFTER_REACHING_TARGET_ZONE}\n"
-    graph_context += f"Packet drop prob: {auto.EP_PACKET_DROP_PROB}\nDelayed transmission prob: {auto.EP_NOISE_STD_DEV}\n"
+    graph_context += f"Packet drop prob: {auto.EP_PACKET_DROP_PROB}\nDelayed transmission prob: {auto.EP_DELAYED_TRANMISSION_PROB}\n"
     graph_context += f"Number of timesteps for delayed transmission: {auto.EP_TIME_STEPS_PER_DELAY}\n"
     graph_context += f"Number of starting bots: {auto.NUM_BOTS[0]}\nVelocity: {auto.EP_VELOCITY}\n"
     graph_context += f"Delta: {auto.EP_DELTA}\nAlpha: {auto.EP_ALPHA}\nMaximum hop count: {auto.EP_HCMAX}\n"
     graph_context += f"Forgetting enabled: {auto.EP_FORGETTING_ON}\nTime between forgetting: {auto.EP_FORGETTING_TIMEP}timesteps\n"
     return graph_context
 
+def TotalValFromListRobos(l:list,i:int,expected_val) -> int:
+    num_total = 0
+    for elem in l:
+        if elem[i] == expected_val:
+            num_total += 1
+    return num_total
+
+def TimeSeries(all_files_dat:list):
+    time = list()
+    data = list()
+    
+    for i in range(len(all_files_dat[0].keys())):
+        data.append(list())
+        time.append(i)
+
+    for d in all_files_dat:
+        current_data_index = 0
+        for key, val in d.items():
+            data[current_data_index].append(TotalValFromListRobos(val,4,True))
+            current_data_index += 1
+
+    plt.figure(figsize=(7, 7))
+    plt.plot(time,data)
+    plt.xlabel("Time step")
+    plt.ylabel("Num bots in zone")
+    plt.title(f"Num bots in target agent's zone at end of simulation")
+    plt.text(1.05, 0.5, GenGraphContext(), fontsize=8, ha='left', va='center', transform=plt.gca().transAxes)
+    plt.grid(True)
+    plt.subplots_adjust(left=0.1,right=0.5,bottom=0.1,top=0.9)
+    plt.tight_layout()
+    plt.savefig("graph.svg")
+    # plt.show()
+
 def Main() -> None:
-    sys.chdir(f"{auto.PATH_TO_WORKING_DIR}/alt_xmls")
+    folder_dir = f"{auto.PATH_TO_WORKING_DIR}/alt_xmls"
+    if len(sys.argv) == 2:
+        folder_dir = folder_dir + re.sub(r'[-].+[=]', '', sys.argv[1]);
+    os.chdir(folder_dir)
 
     all_files_data = list()
-    num_robots_in_zones_at_end = list()
-    random_seeds = list()
-    
-    for i in range(0,NUM_CSVS):
+    for i in range(0,5):
         file_data = dict()
         with open(f"{CSV_FILE_PREFIXES}{i+1}{CSV_FILE_SUFFIXES}", "r") as file:
             for line in file:
@@ -37,40 +73,53 @@ def Main() -> None:
                 file_data[data[0]].append((int(data[1]),int(data[2]),data[3] == 'true',int(data[4]),data[5] == 'true'))
         all_files_data.append(file_data)
 
-    for i in range(0,NUM_CSVS):
-       random_seeds.append(auto.STARTING_RND_SEED + i)
+    # for i in range(0,NUM_CSVS):
+    #    random_seeds.append(auto.STARTING_RND_SEED + i)
+
     # for i in range(0,NUM_CSVS):
     #    random_seeds.append(i) #timestep
 
     # for i in all_files_data:
     #     #print(i)
-    #     dat2 = list()
     #     num_in_range = 0
     #     for key in i:
-    #         for t in i[key]:
-    #             if t[4] == True:
-    #                 num_in_range += 1
-    #         dat2.append(num_in_range)
-    #     num_robots_in_zones_at_end.append(dat2)
-    for file_data in all_files_data:
-        total_robots_at_end = 0
-        for data in file_data[str(len(file_data))]:
-            total_robots_at_end += 1 if data[4] != 0 else 0
-        num_robots_in_zones_at_end.append(total_robots_at_end)
- 
-    plt.figure(figsize=(7, 7))
-    # plt.plot(random_seeds,num_robots_in_zones_at_end)
-    plt.bar(random_seeds,num_robots_in_zones_at_end)
-    plt.xlabel("Random seed")
-    plt.ylabel("Num bots in zone")
-    plt.title(f"Num bots in target agent's zone at end of simulation")
-    plt.text(1.05, 0.5, GenGraphContext(), fontsize=8, ha='left', va='center', transform=plt.gca().transAxes)
-    plt.grid(True)
-    plt.subplots_adjust(left=0.1,right=0.5,bottom=0.1,top=0.9)
-    plt.tight_layout()
-    plt.savefig("graph.svg")
-    #plt.show()
+    #         print(key)
+    #         if i[key][4] == True:
+    #             num_in_range += 1
+    #     num_robots_in_zones_at_end.append(num_in_range)
+    time = list()
+    data = list()
+    
 
+    for i in range(len(all_files_data[0].keys())):
+        data.append(list())
+        time.append(i)
+
+    for d in all_files_data:
+        current_data_index = 0
+        for key, val in d.items():
+            data[current_data_index].append(TotalValFromListRobos(val,4,True))
+            current_data_index += 1
+
+    # for file_data in all_files_data:
+    #     total_robots_at_end = 0
+    #     for data in file_data[str(len(file_data))]:
+    #         total_robots_at_end += 1 if data[4] != 0 else 0
+    #     num_robots_in_zones_at_end.append(total_robots_at_end)
+ 
+    # plt.figure(figsize=(7, 7))
+    # plt.plot(time,data)
+    # # plt.bar(time,data)
+    # plt.xlabel("Time step")
+    # plt.ylabel("Num bots in zone")
+    # plt.title(f"Num bots in target agent's zone at end of simulation")
+    # plt.text(1.05, 0.5, GenGraphContext(), fontsize=8, ha='left', va='center', transform=plt.gca().transAxes)
+    # plt.grid(True)
+    # plt.subplots_adjust(left=0.1,right=0.5,bottom=0.1,top=0.9)
+    # plt.tight_layout()
+    # plt.savefig("graph.svg")
+    # plt.show()
+    TimeSeries(all_files_data)
 if __name__ == "__main__":
     Main()
     print("Successfully finished")
