@@ -14,13 +14,12 @@ XML_OUT_SUFFIX      = ".ModifiedArgos"
 OG_XML_LOCATION     = "experiments/aggregation_one.argos"
 XML_OUT_PREFIX      = "agg_"
 CSV_OUT_PREFIX      = "dat_"
-EXPERMIMENT_LENGTH  = 60     #in seconds 
+EXPERMIMENT_LENGTH  = 60 
 TICKS_STEPS_PER_SEC = "10"  
 STARTING_RND_SEED   = 50
-NUM_RUNS            = 10    #current works as a delta for the random seed 
-POST_EXPERIMENT_WAIT= 1     #also in seconds(used to account for argos start up time)
-NUM_BOTS            = (50,)  #can set mulitple. will rerun experiments with same 
-                            #settings for num bots listed here
+NUM_RUNS            = 10
+POST_EXPERIMENT_WAIT= 1
+NUM_BOTS            = (50,)  
 CSV_IN_FILE_NAME    = "aggregation.txt"
 NUM_PROCESSES       = 12
 #Experiment params 
@@ -34,7 +33,7 @@ LF_DEFAULT_TRGT_AREA= "false"
 LF_NUM_TARGET_AREAS = "2"
 LF_AREA_SIZE        = "0.3"
 LF_SECONDARY_AREA_OFFSET = "0.2"
-EP_STOP_AFTER_REACHING_TARGET_ZONE = "false" #'true' or 'false'
+EP_STOP_AFTER_REACHING_TARGET_ZONE = "false"
 #COM FAULTS
 EP_PACKET_DROP_PROB         = "0.5"
 EP_NOISE_STD_DEV            = "0.5"
