@@ -2,14 +2,13 @@ import os
 import re
 import subprocess as sproc
 
-FORGETTING_TP = (1000,500,100,0) #set to 0 to disable
-NUM_BOTS = (3,5,7,10,20,50,100) 
-IN_RANGE_RADIUS = (5,4,3,2,1,0.5) 
-PACKET_DROP_PROB = (0,0.1,0.2,0.3,0.4,0.5)
-NOISE = (0,0.5,1,1.5,2,2.5)
-
-DELAY_PROB = (0,0.1,0.2,0.3,0.4,0.5) 
-DELAY_STEPS = (0,5,10,20,50,100,200)
+FORGETTING_TP = (1000,500,0) #set to 0 to disable
+NUM_BOTS = (20,) 
+IN_RANGE_RADIUS = (2,) 
+PACKET_DROP_PROB = (0,0.5)
+NOISE = (0,0.5)
+DELAY_PROB = (0,0.5)
+DELAY_STEPS = (20,100,500)
 
 PATH_TO_WORKING_DIR = "/home/malik/Desktop/argos3-examples"
 
@@ -43,23 +42,22 @@ for timep in FORGETTING_TP:
                             automation_arg_list.append(f"-delayed-steps={steps}")
                             automation_arg_list.append(f"-folder-gen-number={num_total_runs}")
                             plotting_args.append(["python", PLOTTER_NAME, f"-folder-gen-number={num_total_runs}"])
-                            target_folder_name.append(f"alt_xmls{num_total_runs}")
+                            target_folder_name.append(f"alt_xmls{num_total_runs}/")
                             automation_args.append(automation_arg_list)
+
+print(len(automation_args))
 
 for i in range(0,len(automation_args)):
 
     process = sproc.Popen(automation_args[i])
     process.wait()
-    process.kill()
 
     process = sproc.Popen(plotting_args[i])
     process.wait()
-    process.kill()
 
     #os.system(f"tar cvf archieves/a{i} --use-compress-program='gzip -9 {target_folder_name[i]}")
-    process = sproc.Popen(["tar", "cvf", f"archieves/a{i}.tar.gz", "--use-compress-program='gzip -9", target_folder_name[i]])
+    process = sproc.Popen(["tar", "-cvf", f"archieves/a{i+1}.tar.gz", "--use-compress-program=gzip -9", target_folder_name[i]])
     process.wait()
-    process.kill()
     
     file_msg = ""
     for z in range(7):
@@ -67,6 +65,14 @@ for i in range(0,len(automation_args)):
     file_msg = file_msg[:-2]
 
     with open("archieves/info.txt", "a") as file:
-        file.write(f"a{i} == {file_msg}\n")
+        file.write(f"a{i+1} == {file_msg}\n")
+    
+    process = sproc.Popen(["rm", "-r", target_folder_name[i]])
+    process.wait()
+
+    
+    
+
+
 
 

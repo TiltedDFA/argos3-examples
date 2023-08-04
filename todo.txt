@@ -47,3 +47,7 @@ Chosen communication faults:
     -Range and bearing sensor-noise -done
     -Range and bearing sensor-delayed transmission -done
 
+play around with errors 1 by 1. a1/a0. 5 plots good. box plots finding how many robots were in zone at 3k tsps.
+YorRobot. Phil Venerable. Robotics Research Intern. Research assistnant/
+heat map/ 3d survace grid
+state machine,base line,try to document

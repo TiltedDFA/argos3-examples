@@ -7,7 +7,7 @@ import matplotlib.pyplot as plt
 
 CSV_FILE_PREFIXES   = "dat_"
 CSV_FILE_SUFFIXES   = ".csv"
-NUM_CSVS            = len(auto.NUM_BOTS) * auto.NUM_RUNS 
+NUM_CSVS            = auto.NUM_RUNS 
 
 
 def GenGraphContext() -> str:
@@ -15,7 +15,7 @@ def GenGraphContext() -> str:
     graph_context += f"Stop after reaching zone: {auto.EP_STOP_AFTER_REACHING_TARGET_ZONE}\n"
     graph_context += f"Packet drop prob: {auto.EP_PACKET_DROP_PROB}\nDelayed transmission prob: {auto.EP_DELAYED_TRANMISSION_PROB}\n"
     graph_context += f"Number of timesteps for delayed transmission: {auto.EP_TIME_STEPS_PER_DELAY}\n"
-    graph_context += f"Number of starting bots: {auto.NUM_BOTS[0]}\nVelocity: {auto.EP_VELOCITY}\n"
+    graph_context += f"Number of starting bots: {auto.NUM_BOTS}\nVelocity: {auto.EP_VELOCITY}\n"
     graph_context += f"Delta: {auto.EP_DELTA}\nAlpha: {auto.EP_ALPHA}\nMaximum hop count: {auto.EP_HCMAX}\n"
     graph_context += f"Forgetting enabled: {auto.EP_FORGETTING_ON}\nTime between forgetting: {auto.EP_FORGETTING_TIMEP}timesteps\n"
     return graph_context
@@ -51,7 +51,7 @@ def TimeSeries(all_files_dat:list):
     plt.subplots_adjust(left=0.1,right=0.5,bottom=0.1,top=0.9)
     plt.tight_layout()
     plt.savefig("graph.svg")
-    # plt.show()
+    plt.show()
 
 def Main() -> None:
     folder_dir = f"{auto.PATH_TO_WORKING_DIR}/alt_xmls"

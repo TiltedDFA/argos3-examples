@@ -1,5 +1,0 @@
-add_library(footbot_RnB_test MODULE footbot_RnB_test.h footbot_RnB_test.cpp)
-target_link_libraries(footbot_RnB_test
-  argos3core_simulator
-  argos3plugin_simulator_footbot
-  argos3plugin_simulator_genericrobot)
