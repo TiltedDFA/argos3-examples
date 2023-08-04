@@ -46,7 +46,7 @@ for timep in FORGETTING_TP:
                             target_folder_name.append(f"alt_xmls{num_total_runs}")
                             automation_args.append(automation_arg_list)
 
-for i in range(0,automation_args):
+for i in range(0,len(automation_args)):
 
     process = sproc.Popen(automation_args[i])
     process.wait()
@@ -56,7 +56,10 @@ for i in range(0,automation_args):
     process.wait()
     process.kill()
 
-    os.system(f"tar cvf archieves/a{i} --use-compress-program='gzip -9 {target_folder_name[i]}")
+    #os.system(f"tar cvf archieves/a{i} --use-compress-program='gzip -9 {target_folder_name[i]}")
+    process = sproc.Popen(["tar", "cvf", f"archieves/a{i}.tar.gz", "--use-compress-program='gzip -9", target_folder_name[i]])
+    process.wait()
+    process.kill()
     
     file_msg = ""
     for z in range(7):
