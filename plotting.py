@@ -8,11 +8,11 @@ import matplotlib.pyplot as plt
 CSV_FILE_PREFIXES   = "dat_"
 CSV_FILE_SUFFIXES   = ".csv"
 NUM_CSVS            = auto.NUM_RUNS 
-
+OUTPUT_GRAPH_NAME   = "Graph.svg"
 
 def GenGraphContext() -> str:
     graph_context = f"Experiment length: {auto.EXPERMIMENT_LENGTH}s\nTarget area size: {auto.LF_RADIUS_COUNTED_WITHIN_TRGT_BOT}\n"
-    graph_context += f"Stop after reaching zone: {auto.EP_STOP_AFTER_REACHING_TARGET_ZONE}\n"
+    graph_context += f"Stationary target bot: {auto.EP_STATIONARY_TARGET_BOT}\n"
     graph_context += f"Packet drop prob: {auto.EP_PACKET_DROP_PROB}\nDelayed transmission prob: {auto.EP_DELAYED_TRANMISSION_PROB}\n"
     graph_context += f"Number of timesteps for delayed transmission: {auto.EP_TIME_STEPS_PER_DELAY}\n"
     graph_context += f"Number of starting bots: {auto.NUM_BOTS}\nVelocity: {auto.EP_VELOCITY}\n"
@@ -35,7 +35,7 @@ def TimeSeries(all_files_dat:list):
         data.append(list())
         time.append(i)
 
-    for d in all_files_dat:
+    for d in all_files_dat: 
         current_data_index = 0
         for key, val in d.items():
             data[current_data_index].append(TotalValFromListRobos(val,4,True))
@@ -43,6 +43,7 @@ def TimeSeries(all_files_dat:list):
 
     plt.figure(figsize=(7, 7))
     plt.plot(time,data)
+    plt.legend(labels=[f"data{i+1}" for i in range(len(all_files_dat))])
     plt.xlabel("Time step")
     plt.ylabel("Num bots in zone")
     plt.title(f"Num bots in target agent's zone at end of simulation")
@@ -50,13 +51,15 @@ def TimeSeries(all_files_dat:list):
     plt.grid(True)
     plt.subplots_adjust(left=0.1,right=0.5,bottom=0.1,top=0.9)
     plt.tight_layout()
-    plt.savefig("graph.svg")
-    plt.show()
+    plt.savefig(OUTPUT_GRAPH_NAME)
+    #plt.show()
 
 def Main() -> None:
-    folder_dir = f"{auto.PATH_TO_WORKING_DIR}/alt_xmls"
-    if len(sys.argv) == 2:
-        folder_dir = folder_dir + re.sub(r'[-].+[=]', '', sys.argv[1]);
+
+    folder_dir = f"{auto.PATH_TO_WORKING_DIR}/alt_xmls/"
+
+    # if len(sys.argv) == 2:
+    #     folder_dir = folder_dir + re.sub(r'[-].+[=]', '', sys.argv[1]);
     os.chdir(folder_dir)
 
     all_files_data = list()
@@ -110,17 +113,15 @@ def Main() -> None:
     # plt.figure(figsize=(7, 7))
     # plt.plot(time,data)
     # # plt.bar(time,data)
-    # plt.xlabel("Time step")
-    # plt.ylabel("Num bots in zone")
-    # plt.title(f"Num bots in target agent's zone at end of simulation")
-    # plt.text(1.05, 0.5, GenGraphContext(), fontsize=8, ha='left', va='center', transform=plt.gca().transAxes)
-    # plt.grid(True)
+    # plt.xlabel("Time step")OUTPUT_GRAPH_NAME
     # plt.subplots_adjust(left=0.1,right=0.5,bottom=0.1,top=0.9)
     # plt.tight_layout()
     # plt.savefig("graph.svg")
     # plt.show()
     TimeSeries(all_files_data)
 if __name__ == "__main__":
+    if len(sys.argv) == 2 and re.compile(r"-name=.+").match(sys.argv[1]):
+        OUTPUT_GRAPH_NAME = sys.argv[1][6:] + ".svg"
     Main()
     print("Successfully finished")
 #should have method to save image

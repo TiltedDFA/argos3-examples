@@ -16,7 +16,7 @@ XML_OUT_SUFFIX      = ".ModifiedArgos"
 OG_XML_LOCATION     = "experiments/aggregation_one.argos"
 XML_OUT_PREFIX      = "agg_"
 CSV_OUT_PREFIX      = "dat_"
-EXPERMIMENT_LENGTH  = 600     #in seconds 
+EXPERMIMENT_LENGTH  = 300     #in seconds 
 TICKS_STEPS_PER_SEC = "10"  
 STARTING_RND_SEED   = 2
 NUM_RUNS            = 5    #current works as a delta for the random seed 
@@ -33,12 +33,12 @@ EP_HCMAX            = "99"
 EP_FORGETTING_ON    = "true"
 EP_FORGETTING_TIMEP = "500"
 LF_RADIUS_COUNTED_WITHIN_TRGT_BOT = "2"
-EP_STOP_AFTER_REACHING_TARGET_ZONE = "true" #'true' or 'false'
+EP_STATIONARY_TARGET_BOT = "true" #'true' or 'false'
 #COM FAULTS
 EP_PACKET_DROP_PROB         = "0"
 EP_NOISE_STD_DEV            = "0"
-EP_DELAYED_TRANMISSION_PROB = "0"
-EP_TIME_STEPS_PER_DELAY     = "0"
+EP_DELAYED_TRANMISSION_PROB = "0.7"
+EP_TIME_STEPS_PER_DELAY     = "200"
 
 def RunArgos(file_name:str, num:int, csv_name:str):
     os.chdir(PATH_TO_WORKING_DIR)
@@ -135,7 +135,7 @@ if __name__ == "__main__":
 
     fb_params_node.set('TimeStepsPerDelay', EP_TIME_STEPS_PER_DELAY)
 
-    fb_params_node.set('StopAfterReachingTargetZone', EP_STOP_AFTER_REACHING_TARGET_ZONE)
+    fb_params_node.set('StopAfterReachingTargetZone', EP_STATIONARY_TARGET_BOT)
 
     #creating desired test files
     os.chdir(XML_OUT_DIR)
