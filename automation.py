@@ -10,7 +10,7 @@ import re
 
 #constants
 RUN_ARGOS           = "argos3"
-PATH_TO_WORKING_DIR = "/home/malik/Desktop/argos3-examples"
+PATH_TO_WORKING_DIR = "/mnt/d/coding/argos3-examples/"
 XML_OUT_DIR         = f"{PATH_TO_WORKING_DIR}/alt_xmls"
 XML_OUT_SUFFIX      = ".ModifiedArgos"
 OG_XML_LOCATION     = "experiments/aggregation_one.argos"
@@ -35,10 +35,10 @@ EP_FORGETTING_TIMEP = "500"
 LF_RADIUS_COUNTED_WITHIN_TRGT_BOT = "2"
 EP_STATIONARY_TARGET_BOT = "true" #'true' or 'false'
 #COM FAULTS
-EP_PACKET_DROP_PROB         = "0"
+EP_PACKET_DROP_PROB         = "0.5"
 EP_NOISE_STD_DEV            = "0"
-EP_DELAYED_TRANMISSION_PROB = "0.7"
-EP_TIME_STEPS_PER_DELAY     = "200"
+EP_DELAYED_TRANMISSION_PROB = "0"
+EP_TIME_STEPS_PER_DELAY     = "0"
 
 def RunArgos(file_name:str, num:int, csv_name:str):
     os.chdir(PATH_TO_WORKING_DIR)
