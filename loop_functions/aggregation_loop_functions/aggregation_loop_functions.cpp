@@ -37,7 +37,7 @@ void CAggregationLoopFunctions::Init(argos::TConfigurationNode& t_node)
 
 }
 
-argos::CColor CAggregationLoopFunctions::GetFloorColor(const argos::CVector2& c_position_on_plane) {return argos::CColor::WHITE;}
+argos::CColor CAggregationLoopFunctions::GetFloorColor(const argos::CVector2& c_position_on_plane) {return argos::CColor::GRAY50;}
 
 void CAggregationLoopFunctions::Reset()
 {

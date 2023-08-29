@@ -7,14 +7,15 @@ import matplotlib.pyplot as plt
 
 CSV_FILE_PREFIXES   = "dat_"
 CSV_FILE_SUFFIXES   = ".csv"
+SHOW_GRAPH_CONTEXT  = True
 NUM_CSVS            = auto.NUM_RUNS 
 OUTPUT_GRAPH_NAME   = "Graph.svg"
 
 def GenGraphContext() -> str:
     graph_context = f"Experiment length: {auto.EXPERMIMENT_LENGTH}s\nTarget area size: {auto.LF_RADIUS_COUNTED_WITHIN_TRGT_BOT}m\n"
     graph_context += f"Stationary target bot: {auto.EP_STATIONARY_TARGET_BOT}\n"
-    graph_context += f"Packet drop prob: {auto.EP_PACKET_DROP_PROB}\nDelayed transmission prob: {auto.EP_DELAYED_TRANMISSION_PROB}\n"
-    graph_context += f"Number of timesteps for delayed transmission: {auto.EP_TIME_STEPS_PER_DELAY}\n"
+    #graph_context += f"Packet drop prob: {auto.EP_PACKET_DROP_PROB}\nDelayed transmission prob: {auto.EP_DELAYED_TRANMISSION_PROB}\n"
+    #graph_context += f"Number of timesteps for delayed transmission: {auto.EP_TIME_STEPS_PER_DELAY}\n"
     graph_context += f"Number of starting bots: {auto.NUM_BOTS}\nVelocity: {auto.EP_VELOCITY}\n"
     graph_context += f"Delta: {auto.EP_DELTA}\nAlpha: {auto.EP_ALPHA}\nMaximum hop count: {auto.EP_HCMAX}\n"
     graph_context += f"Forgetting enabled: {auto.EP_FORGETTING_ON}\nTime between forgetting: {auto.EP_FORGETTING_TIMEP}timesteps\n"
@@ -43,11 +44,12 @@ def TimeSeries(all_files_dat:list):
 
     plt.figure(figsize=(7, 7))
     plt.plot(time,data)
-    plt.legend(labels=[f"Sim{i+1}" for i in range(len(all_files_dat))])
+    plt.legend(labels=[f"Seed{i+1}" for i in range(len(all_files_dat))])
     plt.xlabel("Time step")
     plt.ylabel("Number of bots in zone")
     plt.title(f"Number of bots in target agent's zone per time step")
-    plt.text(1.05, 0.5, GenGraphContext(), fontsize=8, ha='left', va='center', transform=plt.gca().transAxes)
+    if SHOW_GRAPH_CONTEXT:
+        plt.text(1.05, 0.5, GenGraphContext(), fontsize=8, ha='left', va='center', transform=plt.gca().transAxes)
     plt.grid(True)
     plt.subplots_adjust(left=0.1,right=0.5,bottom=0.1,top=0.9)
     plt.tight_layout()
@@ -122,6 +124,8 @@ def Main() -> None:
 if __name__ == "__main__":
     if len(sys.argv) == 2 and re.compile(r"-name=.+").match(sys.argv[1]):
         OUTPUT_GRAPH_NAME = sys.argv[1][6:] + ".svg"
+    elif len(sys.argv) == 2 and sys.argv[1] == "--nocontext":
+        SHOW_GRAPH_CONTEXT = False
     Main()
     print("Successfully finished")
 #should have method to save image
